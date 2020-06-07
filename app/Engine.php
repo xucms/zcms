@@ -27,6 +27,13 @@ class Engine {
     protected $dispatcher;
 
     /**
+     * Stored dbInstances.
+     *
+     * @var array
+     */
+    protected static $dbInstances = array();
+
+    /**
      * Constructor.
      */
     public function __construct() {

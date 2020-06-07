@@ -5,6 +5,43 @@ use app;
 
 class Common extends app\Engine {
 
+    // RSA 第三次公共证书
+    public function getKey($name = 'public') {
+        $config = $this->get('web.config');  // 密钥
+        return trim(preg_replace('/[\r\n]/', '',$config[$name.'.third']));
+    }
+
+    // 设置SESSION链接
+    public function getSESS($name = 'sess') {
+        if (!isset(self::$dbInstances[$name])) {
+            $config = $this->get('web.config');
+            $request = $this->request()->scheme;
+            $this->loader->register('getRedisSESS', 'app\libs\common\RedisSess',array (
+                $config[$name.'.host'],   // 服务器连接地址。默认='127.0.0.1'
+                $config[$name.'.port'],   // 端口号。默认='6379'
+                $config[$name.'.auth'],   // 连接密码，如果有设置密码的话
+                $config[$name.'.db'],     // 缓存库选择。默认0
+                $config[$name.'.ttl'],    // 连接超时时间（秒）。默认10
+                $config['usertime'],      // 默认用户登录过期时间，单位秒。不填默认3600
+                $config['timeout'],       // 默认用户未登录过期时间，单位秒。不填默认3600
+                $config[$name.'.name'],   // SESSION name
+                $config[$name.'.domain'], // 作用域
+                ($request=='http'?false:true),
+
+            ));
+            try {
+                $dbs = $this->getRedisSESS();
+                if (!$dbs) {
+                    throw new \Exception();
+                }
+                self::$dbInstances[$name] = $dbs;
+            } catch (\Exception $e) {
+                die(json_encode(array('code'=>500, 'msg'=>'Redis数据库连接失败', 'data'=>false), JSON_UNESCAPED_UNICODE));
+            }
+        }
+        return self::$dbInstances[$name];
+    }
+
     // XAES加密 返回JSON
     public function getXTea($data = 'str', $id = 'e') {
         $this->loader->register('getTea', 'app\libs\common\Tea');
@@ -40,12 +77,6 @@ class Common extends app\Engine {
     public function decrypt($string, $key) {
         $decrypted = openssl_decrypt(base64_decode($string), 'AES-256-ECB', $key, OPENSSL_RAW_DATA);
         return $decrypted;
-    }
-
-    // RSA 第三次公共证书
-    public function getKey($name = 'public') {
-        $config = $this->get('web.config');  // 密钥
-        return trim(preg_replace('/[\r\n]/', '',$config[$name.'.third']));
     }
 
     // RSA 加密, 解密, 签名, 验签 返回JSON
