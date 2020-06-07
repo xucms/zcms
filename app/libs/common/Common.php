@@ -16,7 +16,7 @@ class Common extends app\Engine {
         if (!isset(self::$dbInstances[$name])) {
             $config = $this->get('web.config');
             $request = $this->request()->scheme;
-            $this->loader->register('getRedisSESS', 'app\libs\common\RedisSess',array (
+            $this->loader->register('getRedisSESS', 'app\libs\common\Redis',array (
                 $config[$name.'.host'],   // 服务器连接地址。默认='127.0.0.1'
                 $config[$name.'.port'],   // 端口号。默认='6379'
                 $config[$name.'.auth'],   // 连接密码，如果有设置密码的话

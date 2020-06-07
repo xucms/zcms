@@ -75,6 +75,7 @@ class Engine {
      * Initializes the framework.
      */
     public function init() {
+        date_default_timezone_set('PRC');
         static $initialized = false;
         $self = $this;
 

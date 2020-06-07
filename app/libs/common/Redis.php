@@ -1,7 +1,7 @@
 <?php
 namespace app\libs\common;
 
-class RedisSess {
+class Redis {
 
     /**
      * redis连接句柄
