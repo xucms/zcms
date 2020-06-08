@@ -1,5 +1,5 @@
 <?php
-namespace app\libs\frontend;
+namespace app\libs\extensions;
 
 use Api;
 

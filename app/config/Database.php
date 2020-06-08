@@ -2,7 +2,7 @@
 return array(
 # ======> 公共配置
     # SESSION 数据用户未登录过期时间 秒
-    'timeout' => '6000',
+    'timeout' => '60',
     # SESSION 数据用户登陆后过期时间 秒
     'usertime' => '86400',
     'token' => '120',

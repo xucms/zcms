@@ -7,19 +7,15 @@ return array(
         array('GET /search', 'frontend\Index:search'),
     ),
     'admin' => array(
-        array('GET|POST /((@cid:[0-9]+/)@page:[0-9]+)', 'frontend\Index:index'),
-        array('GET /search', 'frontend\Index:search'),
+        array('GET|POST /admin', 'backend\Index:index'),
     ),
     'list' => array(
-        array('GET|POST /((@cid:[0-9]+/)@page:[0-9]+)', 'frontend\Index:index'),
-        array('GET /search', 'frontend\Index:search'),
+        array('GET|POST /list', 'frontend\Index:list'),
     ),
     'user' => array(
-        array('GET|POST /((@cid:[0-9]+/)@page:[0-9]+)', 'frontend\Index:index'),
-        array('GET /search', 'frontend\Index:search'),
+        array('GET|POST /user', 'frontend\Index:user'),
     ),
     'data' => array(
-        array('GET|POST /((@cid:[0-9]+/)@page:[0-9]+)', 'frontend\Index:index'),
-        array('GET /search', 'frontend\Index:search'),
+        array('GET|POST /data', 'frontend\Index:data'),
     ),
 );

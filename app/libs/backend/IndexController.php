@@ -1,5 +1,5 @@
 <?php
-namespace app\libs\frontend;
+namespace app\libs\backend;
 
 use Api;
 
@@ -12,7 +12,10 @@ class IndexController {
      * @return [type]       [description]
      */
     public static function index() {
-        Api::render('index', array('title' => '测试接口'));
+        Api::fun()->getSESS();
+
+        $token = Api::fun()->getToken();
+        Api::render('index', array('title' => '测试接口','token' => $token));
     }
 
 }
