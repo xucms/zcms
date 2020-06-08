@@ -8,9 +8,6 @@
 <link rel="stylesheet" type="text/css" href="/public/creator/css/common.min.css">
 </head>
 <body>
-
 <h1>{$title}</h1>
-<h1>{$token}</h1>
-
 </body>
 </html>

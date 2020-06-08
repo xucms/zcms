@@ -12,7 +12,7 @@ class IndexController {
      * @return [type]       [description]
      */
     public static function index() {
-        Api::render('index', array('title' => '测试接口'));
+        Api::render('index', array('title' => '地球村'));
     }
 
 }

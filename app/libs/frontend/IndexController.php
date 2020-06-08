@@ -41,8 +41,9 @@ class IndexController {
 
         //echo Api::fun()->fixHtml('<div><p>百度一下</p>');
 
-        $token = Api::fun()->getToken();
-        Api::render('index', array('title' => '地球村','token' => $token));
+        //$token = Api::fun()->getToken();
+
+        Api::render('index', array('title' => '地球村'));
     }
 
 }
