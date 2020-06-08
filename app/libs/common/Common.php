@@ -11,6 +11,15 @@ class Common extends app\Engine {
         return trim(preg_replace('/[\r\n]/', '',$config[$name.'.third']));
     }
 
+    // TOKEN 令牌
+    public function getToken($string = '') {
+        $request = $this->request()->user_agent;
+        $config = $this->get('web.config');
+        $token = trim(md5(md5($request).md5(uniqid('',true).md5($string).md5($this->getKey()))));
+        $_SESSION['token'] = serialize(array($token,time(),$config['token']));
+        return $token;
+    }
+
     // 设置SESSION链接
     public function getSESS($name = 'sess') {
         if (!isset(self::$dbInstances[$name])) {
