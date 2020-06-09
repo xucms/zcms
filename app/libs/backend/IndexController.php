@@ -3,7 +3,7 @@ namespace app\libs\backend;
 
 use Api;
 
-class IndexController {
+class IndexController extends BaseController{
 
     /**
      * 首页
@@ -12,6 +12,8 @@ class IndexController {
      * @return [type]       [description]
      */
     public static function index() {
+        parent::__checkManagePrivate();
+
         Api::fun()->getSESS();
 
         $config = Api::request()->data;
@@ -21,11 +23,11 @@ class IndexController {
             if(trim($token[0])==trim($config['satoken'])&&trim($token[2])>(time()-trim($token[1]))) {
                 $_SESSION['token'] = 0;
                 $user_name = trim($config['user_name']);
-                if(!Api::verify()->isNames($user_name)){
+                if(!parent::isNames($user_name)){
                     header('Location: ' . Api::request()->url);exit();
                 }
                 $user_pwd = Api::fun()->getRSA('rd',trim($config['user_pwd']));
-                if(!Api::verify()->isPWD($user_pwd)){
+                if(!parent::isPWD($user_pwd)){
                     header('Location: ' . Api::request()->url);exit();
                 }
                 header('Location: /');exit();

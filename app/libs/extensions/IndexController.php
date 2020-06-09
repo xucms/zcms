@@ -3,7 +3,7 @@ namespace app\libs\extensions;
 
 use Api;
 
-class IndexController {
+class IndexController extends BaseController{
 
     /**
      * 首页

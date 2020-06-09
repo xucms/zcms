@@ -7,6 +7,7 @@
 <script src="/public/creator/jquery/jquery.cookie.js"></script>
 <script src="/public/creator/jquery/jsencrypt.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/public/creator/css/common.min.css">
+<script>$.cookie('GUID', '1', { expires: 7, path: '/' });</script>
 </head>
 <body>
 

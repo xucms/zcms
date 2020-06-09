@@ -1,7 +1,21 @@
 <?php
-namespace app\libs\common;
+namespace app\libs\backend;
 
-class Functions{
+use Api;
+
+class BaseController {
+
+    /**
+     * 检测管理员权限
+     * @param  boolean $force [description]
+     * @return [type]         [description]
+     */
+    protected static function __checkManagePrivate() {
+        if(empty($_COOKIE['GUID'])){
+            header('Location: /error.html');
+            exit();
+        }
+    }
 
     /**
      * 验证用户名
@@ -9,7 +23,7 @@ class Functions{
      * @param int $length
      * @return boolean
      */
-    public function isNames($value, $minLen=2, $maxLen=25, $charset='ALL') {
+    public static function isNames($value, $minLen=2, $maxLen=25, $charset='ALL') {
         if(empty($value)){
             return false;
         }
@@ -29,7 +43,7 @@ class Functions{
      * @param int $length
      * @return boolean
      */
-    public function isPWD($value,$minLen=5,$maxLen=64){
+    public static function isPWD($value,$minLen=5,$maxLen=64){
         $match='/^[\\~!@#$%^&*()-_=+|{}\[\],.?\/:;\'\"\d\w]{'.$minLen.','.$maxLen.'}$/';
         $v = trim($value);
         if(empty($v)){
@@ -44,7 +58,7 @@ class Functions{
      * @param int $length
      * @return boolean
      */
-    public function isEmail($value,$match='/^[\w\d]+[\w\d-.]*@[\w\d-.]+\.[\w\d]{2,10}$/i'){
+    public static function isEmail($value,$match='/^[\w\d]+[\w\d-.]*@[\w\d-.]+\.[\w\d]{2,10}$/i'){
         $v = trim($value);
         if(empty($v)) {
             return false;
@@ -57,7 +71,7 @@ class Functions{
      * @param string $value
      * @return boolean
      */
-    public function isTelephone($value,$match='/^0[0-9]{2,3}[-]?\d{7,8}$/'){
+    public static function isTelephone($value,$match='/^0[0-9]{2,3}[-]?\d{7,8}$/'){
         $v = trim($value);
         if(empty($v)){
             return false;
@@ -71,7 +85,7 @@ class Functions{
      * @param string $match
      * @return boolean
      */
-    public function isMobile($value,$match='/^[(86)|0]?(13\d{9})|(15\d{9})|(18\d{9})$/'){
+    public static function isMobile($value,$match='/^[(86)|0]?(13\d{9})|(15\d{9})|(18\d{9})$/'){
         $v = trim($value);
         if(empty($v)) {
             return false;
@@ -85,7 +99,7 @@ class Functions{
      * @param string $match
      * @return boolean
      */
-    public function isPostcode($value,$match='/\d{6}/'){
+    public static function isPostcode($value,$match='/\d{6}/'){
         $v = trim($value);
         if(empty($v)){
             return false;
@@ -99,7 +113,7 @@ class Functions{
      * @param string $match
      * @return boolean
      */
-    public function isIP($value,$match='/^(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])$/'){
+    public static function isIP($value,$match='/^(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])$/'){
         $v = trim($value);
         if(empty($v)){
             return false;
@@ -113,7 +127,7 @@ class Functions{
      * @param string $match
      * @return boolean
      */
-    public function isIDcard($value,$match='/^\d{6}((1[89])|(2\d))\d{2}((0\d)|(1[0-2]))((3[01])|([0-2]\d))\d{3}(\d|X)$/i'){
+    public static function isIDcard($value,$match='/^\d{6}((1[89])|(2\d))\d{2}((0\d)|(1[0-2]))((3[01])|([0-2]\d))\d{3}(\d|X)$/i'){
         $v = trim($value);
         if(empty($v)){
             return false;
@@ -129,7 +143,7 @@ class Functions{
      * @param string $match
      * @return boolean
      */
-    public function isURL($value,$match='/^(http:\/\/)?(https:\/\/)?([\w\d-]+\.)+[\w-]+(\/[\d\w-.\/?%&=]*)?$/'){
+    public static function isURL($value,$match='/^(http:\/\/)?(https:\/\/)?([\w\d-]+\.)+[\w-]+(\/[\d\w-.\/?%&=]*)?$/'){
         $v = strtolower(trim($value));
         if(empty($v)) {
             return false;
@@ -138,7 +152,7 @@ class Functions{
     }
 
     // 18位身份证校验码有效性检查
-    public function check18IDCard($IDCard) {
+    public static function check18IDCard($IDCard) {
         if (strlen($IDCard) != 18) {
             return false;
         }
@@ -155,7 +169,7 @@ class Functions{
      * 金额格式化
      * @param string $number 数字
      */
-    public function format_money($number) {
+    public static function format_money($number) {
         return number_format($number,2,'.','');
     }
 
@@ -164,7 +178,7 @@ class Functions{
      * @param  [type] $accountPrice 金额值
      * @return [type] [description]
      */
-    public function check_money_format($accountPrice) {
+    public static function check_money_format($accountPrice) {
         if (!preg_match('/^[0-9]+(.[0-9]{1,2})?$/', $accountPrice)){ return false; }
         return true;
     }

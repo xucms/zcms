@@ -3,7 +3,7 @@ namespace app\libs\frontend;
 
 use Api;
 
-class IndexController {
+class IndexController extends BaseController{
 
     /**
      * 首页
@@ -43,6 +43,10 @@ class IndexController {
         //$token = Api::fun()->getToken();
 
         Api::render('index', array('title' => '地球村'));
+    }
+
+    public static function error() {
+        Api::render('error');
     }
 
 }
