@@ -30,7 +30,7 @@ $(function() {
   $("#loginsubmit").click(function() {
     if(t.val()!==''){
       var encrypt = new JSEncrypt();
-      encrypt.setPublicKey(k.val());
+      encrypt.setPublicKey(window.atob(k.val()));
       var encrypted = encrypt.encrypt(t.val());
       t.val(encrypted);
     }

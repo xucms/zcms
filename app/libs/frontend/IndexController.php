@@ -12,7 +12,6 @@ class IndexController {
      * @return [type]       [description]
      */
     public static function index() {
-        Api::fun()->getSESS();
 
         $data['name'] = '昵称';
         $data['age'] = '26';
