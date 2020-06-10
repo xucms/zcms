@@ -1,7 +1,7 @@
 <?php
 namespace app\libs\common;
 
-class Tea {
+class Tea extends Common {
 
     /**
      * 加密方法
