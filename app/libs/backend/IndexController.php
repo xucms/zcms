@@ -16,6 +16,8 @@ class IndexController extends BaseController{
 
         Api::fun()->getSESS();
 
+        //print_r(Api::fun()->getDB());
+
         $config = Api::request()->data;
         //print_r(Api::request());
         if(!empty($config['satoken'])&&!empty($_SESSION['token'])){

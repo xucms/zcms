@@ -34,6 +34,13 @@ class Engine {
     protected static $dbInstances = array();
 
     /**
+     * Stored dbsInstances.
+     *
+     * @var array
+     */
+    protected static $dbsInstances = array();
+
+    /**
      * Constructor.
      */
     public function __construct() {

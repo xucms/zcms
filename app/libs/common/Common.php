@@ -51,6 +51,32 @@ class Common extends app\Engine {
         return self::$dbInstances[$name];
     }
 
+    // 设置数据库链接
+    public function getDB($name = 'db') {
+        if (!isset(self::$dbsInstances[$name])) {
+            $config = $this->get('web.config');
+            $this->loader->register('getDbPdo', 'app\libs\common\DbPdo',array (
+                $config[$name.'.host'],    // 数据库主机地址 默认='127.0.0.1'
+                $config[$name.'.user'],    // 数据库用户名
+                $config[$name.'.pass'],    // 数据库密码
+                $config[$name.'.name'],    // 数据库名称
+                $config[$name.'.charset'], // 数据库编码 默认=utf8
+                $config[$name.'.port'],    // 数据库端口 默认=3306
+                $config[$name.'.prefix'],  // 数据库表前缀
+            ));
+            try {
+                $dbs = $this->getDbPdo();
+                if (!$dbs) {
+                    throw new \Exception();
+                }
+                self::$dbsInstances[$name] = $dbs;
+            } catch (\Exception $e) {
+                die(json_encode(array('code'=>500, 'msg'=>'Mysqli数据库连接失败', 'data'=>false), JSON_UNESCAPED_UNICODE));
+            }
+        }
+        return self::$dbsInstances[$name];
+    }
+
     // XAES加密 返回JSON
     public function getXTea($data = 'str', $id = 'e') {
         $this->loader->register('getTea', 'app\libs\common\Tea');
