@@ -11,7 +11,8 @@ class BaseController {
      * @return [type]         [description]
      */
     protected static function __checkManagePrivate() {
-        if(empty($_COOKIE['GUID'])){
+        Api::fun()->getSESS();
+        if((!empty($_SESSION['user'])&&mb_strlen($_SESSION['user'])!=32)||empty($_COOKIE['GUID'])) {
             header('Location: /error.html');
             exit();
         }
@@ -24,10 +25,10 @@ class BaseController {
      * @return boolean
      */
     public static function isNames($value, $minLen=2, $maxLen=25, $charset='ALL') {
-        if(empty($value)){
+        if(empty($value)) {
             return false;
         }
-        switch($charset){
+        switch($charset) {
             case 'EN': $match = '/^[_\w\d\.\@]{'.$minLen.','.$maxLen.'}$/iu';
                 break;
             case 'CN':$match = '/^[_\.\@\x{4e00}-\x{9fa5}\d]{'.$minLen.','.$maxLen.'}$/iu';
@@ -43,10 +44,10 @@ class BaseController {
      * @param int $length
      * @return boolean
      */
-    public static function isPWD($value,$minLen=5,$maxLen=64){
+    public static function isPWD($value,$minLen=5,$maxLen=64) {
         $match='/^[\\~!@#$%^&*()-_=+|{}\[\],.?\/:;\'\"\d\w]{'.$minLen.','.$maxLen.'}$/';
         $v = trim($value);
-        if(empty($v)){
+        if(empty($v)) {
             return false;
         }
         return preg_match($match,$v);
@@ -58,7 +59,7 @@ class BaseController {
      * @param int $length
      * @return boolean
      */
-    public static function isEmail($value,$match='/^[\w\d]+[\w\d-.]*@[\w\d-.]+\.[\w\d]{2,10}$/i'){
+    public static function isEmail($value,$match='/^[\w\d]+[\w\d-.]*@[\w\d-.]+\.[\w\d]{2,10}$/i') {
         $v = trim($value);
         if(empty($v)) {
             return false;
@@ -71,9 +72,9 @@ class BaseController {
      * @param string $value
      * @return boolean
      */
-    public static function isTelephone($value,$match='/^0[0-9]{2,3}[-]?\d{7,8}$/'){
+    public static function isTelephone($value,$match='/^0[0-9]{2,3}[-]?\d{7,8}$/') {
         $v = trim($value);
-        if(empty($v)){
+        if(empty($v)) {
             return false;
         }
         return preg_match($match,$v);
@@ -85,7 +86,7 @@ class BaseController {
      * @param string $match
      * @return boolean
      */
-    public static function isMobile($value,$match='/^[(86)|0]?(13\d{9})|(15\d{9})|(18\d{9})$/'){
+    public static function isMobile($value,$match='/^[(86)|0]?(13\d{9})|(15\d{9})|(18\d{9})$/') {
         $v = trim($value);
         if(empty($v)) {
             return false;
@@ -99,9 +100,9 @@ class BaseController {
      * @param string $match
      * @return boolean
      */
-    public static function isPostcode($value,$match='/\d{6}/'){
+    public static function isPostcode($value,$match='/\d{6}/') {
         $v = trim($value);
-        if(empty($v)){
+        if(empty($v)) {
             return false;
         }
         return preg_match($match,$v);
@@ -113,7 +114,7 @@ class BaseController {
      * @param string $match
      * @return boolean
      */
-    public static function isIP($value,$match='/^(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])$/'){
+    public static function isIP($value,$match='/^(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])$/') {
         $v = trim($value);
         if(empty($v)){
             return false;
@@ -127,11 +128,11 @@ class BaseController {
      * @param string $match
      * @return boolean
      */
-    public static function isIDcard($value,$match='/^\d{6}((1[89])|(2\d))\d{2}((0\d)|(1[0-2]))((3[01])|([0-2]\d))\d{3}(\d|X)$/i'){
+    public static function isIDcard($value,$match='/^\d{6}((1[89])|(2\d))\d{2}((0\d)|(1[0-2]))((3[01])|([0-2]\d))\d{3}(\d|X)$/i') {
         $v = trim($value);
         if(empty($v)){
             return false;
-        } else if(strlen($v)>18){
+        } else if(strlen($v)>18) {
             return false;
         }
         return preg_match($match,$v);
@@ -143,7 +144,7 @@ class BaseController {
      * @param string $match
      * @return boolean
      */
-    public static function isURL($value,$match='/^(http:\/\/)?(https:\/\/)?([\w\d-]+\.)+[\w-]+(\/[\d\w-.\/?%&=]*)?$/'){
+    public static function isURL($value,$match='/^(http:\/\/)?(https:\/\/)?([\w\d-]+\.)+[\w-]+(\/[\d\w-.\/?%&=]*)?$/') {
         $v = strtolower(trim($value));
         if(empty($v)) {
             return false;
