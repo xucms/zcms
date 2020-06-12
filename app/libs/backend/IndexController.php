@@ -28,8 +28,10 @@ class IndexController extends BaseController{
                 }
                 $dbData = Api::fun()->getDB()->field('*')->where('user_name = \''.trim($user_name).'\' and user_pwd = \''.trim(md5(Api::fun()->getRSA('re',$user_pwd))).'\'')->table('info_user')->findRow();
                 if(!empty($dbData)) {
-                    $_SESSION['user'] = md5(Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name'],$dbData['user_pwd'])));
-                    setcookie('TREE', md5(session_id()), time()+3600*24*30, '/', Api::request()->host, false);
+                    $verify = Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name']));
+                    $_SESSION['user'] = md5($verify);
+                    setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
+                    setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
                     header('Location: /');exit();
                 } else {
                     header('Location: ' . Api::request()->url);exit();

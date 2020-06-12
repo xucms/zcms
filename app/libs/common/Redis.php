@@ -45,6 +45,9 @@ class Redis extends Common {
         session_set_cookie_params($usertime, "/", $sedomain, $scheme, true);
         session_name($sename);
         session_start();
+        if (isset($_COOKIE[$sename])) {
+            setcookie($sename, $_COOKIE[$sename], time()+$usertime, '/', $sedomain, $scheme , true);
+        }
     }
 
     /**

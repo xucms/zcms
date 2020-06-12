@@ -12,9 +12,13 @@ class BaseController {
      */
     protected static function __checkManagePrivate() {
         Api::fun()->getSESS();
-        if((!empty($_SESSION['user'])&&mb_strlen($_SESSION['user'])!=32)||empty($_COOKIE['GUID'])) {
+        if(empty($_COOKIE['GUID'])||(!empty($_COOKIE['TREE'])&&md5(session_id())!=trim($_COOKIE['TREE']))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5($_COOKIE['Q']))) {
             header('Location: /error.html');
             exit();
+        }
+        if(!empty($_SESSION['user'])&&!empty($_COOKIE['Q'])&&(trim($_SESSION['user'])==md5($_COOKIE['Q']))){
+            setcookie('Q', $_COOKIE['Q'], time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
+            setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
         }
     }
 

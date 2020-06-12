@@ -5,6 +5,18 @@ use app;
 
 class Common extends app\Engine {
 
+    // 作用域
+    public function getDomain() {
+        $config = $this->get('web.config');
+        return trim($config['sess.domain']);
+    }
+
+    // 作用域有效时间
+    public function getDomTime() {
+        $config = $this->get('web.config');
+        return trim($config['usertime']);
+    }
+
     // RSA 第三次公共证书
     public function getKey($name = 'public') {
         $config = $this->get('web.config');  // 密钥
@@ -17,7 +29,7 @@ class Common extends app\Engine {
         $config = $this->get('web.config');
         $token = trim(md5(md5($request).md5(uniqid('',true).md5($string).md5($this->getKey()))));
         $_SESSION['token'] = serialize(array($token,time(),$config['token']));
-        return $token;
+        return trim($token);
     }
 
     // 设置SESSION链接
