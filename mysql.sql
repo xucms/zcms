@@ -2,23 +2,13 @@ CREATE TABLE IF NOT EXISTS info_user (
   user_id mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   user_name varchar(50) NOT NULL,
   user_pwd char(32) NOT NULL,
-  user_money mediumint(9) NOT NULL,
-  user_staus tinyint(1) NOT NULL DEFAULT '1',
-  user_pay tinyint(1) NOT NULL,
-  user_question varchar(50) NOT NULL,
-  user_answer varchar(50) NOT NULL,
-  user_type tinyint(1) NOT NULL,
-  user_logip varchar(16) NOT NULL,
-  user_lognum smallint(5) NOT NULL DEFAULT '1',
-  user_logtime int(10) NOT NULL,
-  user_joinip varchar(16) NOT NULL,
-  user_jointime int(10) NOT NULL,
-  user_duetime int(10) NOT NULL,
-  user_qq varchar(20) NOT NULL,
+  user_ok varchar(50) NOT NULL,
   user_email varchar(50) NOT NULL,
+  user_ip varchar(40) NOT NULL,
   user_face varchar(50) NOT NULL,
+  user_logintime int(11) NOT NULL,
   PRIMARY KEY (user_id)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-INSERT INTO info_user (user_id, user_name, user_pwd, user_money, user_staus, user_pay, user_question, user_answer, user_type, user_logip, user_lognum, user_logtime, user_joinip, user_jointime, user_duetime, user_qq, user_email, user_face) VALUES
-(1, 'admin', 'd6ceebf494d774931e92e45f834d490f', 1, 1, 1, '1', '1', 1, '127.0.0.1', 1, 1, '127.0.0.1', 12345678, 12345678, '10000', '10000@qq.com', '');
+INSERT INTO info_user (user_id, user_name, user_pwd, user_ok, user_email, user_ip, user_face, user_logintime) VALUES
+(1, 'admin', 'd6ceebf494d774931e92e45f834d490f', '1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1', '10000@qq.com', '127.0.0.1', '', 1311954804);

@@ -16,7 +16,11 @@ class BaseController {
             header('Location: /error.html');
             exit();
         }
-        if(!empty($_SESSION['user'])&&!empty($_COOKIE['Q'])&&(trim($_SESSION['user'])==md5($_COOKIE['Q']))){
+        if(!empty($_SESSION['user'])&&!empty($_COOKIE['Q'])&&(trim($_SESSION['user'])==md5($_COOKIE['Q']))) {
+            if(Api::request()->url=='/login') {
+                header('Location: /admin-index');
+                exit();
+            }
             setcookie('Q', $_COOKIE['Q'], time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
             setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
         }

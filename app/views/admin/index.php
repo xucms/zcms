@@ -13,7 +13,7 @@
 
 <h1>{$title}</h1>
 
-<form name="loginForm" id="login" action="/admin" method="post">
+<form name="loginForm" id="login" action="/login" method="post">
     <input type="text" name="user_name" id="user_name" value="" autocomplete="off" placeholder="手机/邮箱/用户名" />
     <input type="password" name="user_pwd" id="user_pwd" value="" autocomplete="off" placeholder="密码" />
     <input type="hidden" name="satoken" id="satoken" value="{$token}" autocomplete="off" class="hide"/>

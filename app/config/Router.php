@@ -7,7 +7,8 @@ return array(
         array('GET /search', 'frontend\Index:search'),
     ),
     'admin' => array(
-        array('GET|POST /admin', 'backend\Index:index'),
+        array('GET|POST /login', 'backend\Index:index'),
+        array('GET|POST /admin-index', 'backend\Index:index'),
     ),
     'list' => array(
         array('GET|POST /list', 'frontend\Index:list'),
