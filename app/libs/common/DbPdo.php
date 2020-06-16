@@ -1,451 +1,477 @@
 <?php
 namespace app\libs\common;
 
+/*
+//插入
+$data = array(
+    'sid'=>101,
+    'aa'=>123456,
+    'bbc'=>'aaaaaaaaaaaaaa',
+    );
+$mysql->insert('t_table',$data);
+//查询
+$res = $mysql->field(array('sid','aa','bbc'))
+    ->order(array('sid'=>'desc','aa'=>'asc'))
+    ->where(array('sid'=>"101",'aa'=>array('123455','>','or')))
+    ->limit(1,2)
+    ->select('t_table');
+$res = $mysql->field('sid,aa,bbc')
+    ->order('sid desc,aa asc')
+    ->where('sid=101 or aa>123455')
+    ->limit(1,2)
+    ->select('t_table');
+//获取最后执行的sql语句
+$sql = $mysql->getLastSql();
+//直接执行sql语句
+$sql = "show tables";
+$res = $mysql->doSql($sql);
+//事务
+$mysql->startTrans();
+$mysql->where(array('sid'=>102))->update('t_table',array('aa'=>666666));
+$mysql->where(array('sid'=>103))->update('t_table',array('bbc'=>'呵呵8888呵呵'));
+$mysql->where(array('sid'=>104))->delete('t_table');
+$mysql->commit();
+*/
+
 class DbPdo extends Common {
 
     /**
-     * 连接数据库,从配置文件中读取配置信息
+     * 静态属性,所有数据库实例共用,避免重复连接数据库
      */
-    protected $db;
+    protected static $_dbh = null;
 
     /**
-     * 获取sql结构
+     * 数据库是否使用长连接
      */
-    protected $_sql;
+    protected $_pconnect = true;
 
     /**
-     * 抛出sql语句错误信息
+     * 最后一条sql语句
      */
-    protected $throw = 1;
+    protected $_sql = false;
 
     /**
-     * 构造sql语句
+     * 初始化 WHERE 默认值
      */
-    protected $_query;
+    protected $_where = '';
 
     /**
-     * 构造
+     * 初始化 ORDER 默认值
+     */
+    protected $_order = '';
+
+    /**
+     * 初始化 LIMIT 默认值
+     */
+    protected $_limit = '';
+
+    /**
+     * 初始化 FIELD 默认值
+     */
+    protected $_field = '*';
+
+    /**
+     * 状态，0表示查询条件干净，1表示查询条件污染
+     */
+    protected $_clear = 0;
+
+    /**
+     * 事务指令数
+     */
+    protected $_trans = 0;
+
+    /**
+     * 初始化类
+     * @param array $conf 数据库配置
      */
     public function __construct($dbhost = null, $dbuser = null, $dbpass = null, $dbname = null, $dbcharset = null, $dbport = null, $dbprefix = null) {
-        $this->db = new \mysqli($dbhost, $dbuser, $dbpass, $dbname, $dbport);
-        $this->db->set_charset($dbcharset);
-        if ($this->db->connect_error) {
-            if ($this->throw) {
-                throw new Exception($this->db->connect_error, $this->db->connect_errno);
-            }
+        class_exists('PDO') or die("PDO: class not exists.");
+        $this->_host = trim($dbhost);
+        $this->_port = trim($dbport);
+        $this->_user = trim($dbuser);
+        $this->_pass = trim($dbpass);
+        $this->_dbName = trim($dbname);
+        $this->_prefix = trim($dbprefix);
+        $this->_charset = trim($dbcharset);
+        //连接数据库
+        if (is_null(self::$_dbh)) {
+            $this->_connect();
         }
+    }
+
+    /**
+     * 连接数据库的方法
+     */
+    protected function _connect() {
+        $dsn = 'mysql:host=' . $this->_host . ';port=' . $this->_port . ';dbname=' . $this->_dbName;
+        //持久化连接
+        $options = $this->_pconnect ? array(\PDO::ATTR_PERSISTENT => true) : array();
+        try {
+            $dbh = new \PDO($dsn, $this->_user, $this->_pass, $options);
+            $dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION); //设置如果sql语句执行错误则抛出异常，事务会自动回滚
+            $dbh->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false); //禁用prepared statements的仿真效果(防SQL注入)
+        }
+        catch(\PDOException $e) {
+            die('Connection failed: ' . $e->getMessage());
+        }
+        $dbh->exec('SET NAMES '.$this->_charset);
+        self::$_dbh = $dbh;
     }
 
     /**
      * 防止克隆
-     * 
      */
-    private function __clone() {}
-
-    /** 
-     * 查询字段
-     * @param string $field 要查询的字段
-     * @return Db
-     */
-    public function field($field) {
-        $this->_query['field'] = "SELECT {$field}";
-        return $this;
+    private function __clone() {
+        $this->_host = null;
+        $this->_port = null;
+        $this->_user = null;
+        $this->_pass = null;
+        $this->_dbName = null;
+        $this->_prefix = null;
+        $this->_charset = null;
+        self::$_dbh = null;
     }
 
-    /** 
-     * 查询的表名
-     * @param string $table 要查询的表名可以带别名,例如table as tab
-     * @return Db
+    /**
+     * 字段和表名添加 `符号
+     * 保证指令中使用关键字不出错 针对mysql
+     * @param string $value
+     * @return string
      */
-    public function table($table) {
-        $this->_query['table'] = "FROM {$table}";
-        return $this;
-    }
-
-    /** 
-     * 联合查询
-     * @param string $join 联合的表名可以带别名,必须加上关联的on语句
-     * @return Db
-     */
-    public function join($join) {
-        $this->_query['join'][] = $join;
-        return $this;
-    }
-
-    /** 
-     * 条件语句
-     * @param string $where sql条件语句不需加where关键字
-     * @return Db
-     */
-    public function where($where) {
-        $this->_query['where'] = "WHERE {$where}";
-        return $this;
-    }
-
-    /** 
-     * 排序
-     * @param string $order
-     * @return Db
-     */
-    public function order($order) {
-        if ($order != '') {
-            $this->_query['order'] = "ORDER BY {$order}";
+    protected function _addChar($value) {
+        if ('*' == $value || false !== strpos($value, '(') || false !== strpos($value, '.') || false !== strpos($value, '`')) {
+            //如果包含* 或者 使用了sql方法 则不作处理
+        } elseif (false === strpos($value, '`')) {
+            $value = '`' . trim($value) . '`';
         }
-        return $this;
+        return $value;
     }
 
-    /** 
-     * 获取条数
-     * @param string $limit 格式0,5
-     * @return Db
+    /**
+     * 取得数据表的字段信息
+     * @param string $tbName 表名
+     * @return array
      */
-    public function limit($limit) {
-        if ($limit != '') {
-            $this->_query['limit'] = "LIMIT {$limit}";
+    protected function _tbFields($tbName) {
+        $sql = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME="' . $tbName . '" AND TABLE_SCHEMA="' . $this->_dbName . '"';
+        $stmt = self::$_dbh->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $ret = array();
+        foreach ($result as $key => $value) {
+            $ret[$value['COLUMN_NAME']] = 1;
         }
-        return $this;
+        return $ret;
     }
 
-    /** 
-     * 构造sql语句
-     * @return string 返回sql语句
+    /**
+     * 过滤并格式化数据表字段
+     * @param string $tbName 数据表名
+     * @param array $data POST提交数据
+     * @return array $newdata
      */
-    private function buildsql() {
-        $sql = $this->_query['field'] . ' ' . $this->_query['table'];
-        if (!empty($this->_query['join'])) {
-            foreach ($this->_query['join'] as $join) {
-                $sql.= " {$join}";
-            };
+    protected function _dataFormat($tbName, $data) {
+        if (!is_array($data)) { return array(); }
+        $table_column = $this->_tbFields($tbName);
+        $ret = array();
+        foreach ($data as $key => $val) {
+            if (!is_scalar($val)) { continue; } //值不是标量则跳过
+            if (array_key_exists($key, $table_column)) {
+                $key = $this->_addChar($key);
+                if (is_int($val)) {
+                    $val = intval($val);
+                } elseif (is_float($val)) {
+                    $val = floatval($val);
+                } elseif (preg_match('/^\(\w*(\+|\-|\*|\/)?\w*\)$/i', $val)) {
+                    // 支持在字段的值里面直接使用其它字段 ,例如 (score+1) (name) 必须包含括号
+                    $val = $val;
+                } elseif (is_string($val)) {
+                    //将字符串中的单引号（'）、双引号（"）、反斜线（\）与 NUL（NULL 字符转义
+                    $val = '"' . addslashes($val) . '"';
+                }
+                $ret[$key] = $val;
+            }
         }
-        if (isset($this->_query['del'])) {
-            $sql = $this->_query['del'] . ' ' . $this->_query['table'];
-        }
-        if ($this->_query['where'] != '') {
-            $sql.= ' ' . $this->_query['where'];
-        }
-        if (isset($this->_query['order']) && $this->_query['order'] != '') {
-            $sql.= ' ' . $this->_query['order'];
-        }
-        unset($this->_query);
-        return $sql;
+        return $ret;
     }
 
-    /** 
-     * 执行select查询
-     * @return bool|array 失败返回FALSE,成功返回二维数组
+    /**
+     * 执行查询 主要针对 SELECT, SHOW 等指令
+     * @param string $sql sql指令
+     * @return mixed
      */
-    public function select() {
-        $sql = $this->buildsql();
-        return $this->fetchAll($sql);
-    }
-
-    /** 
-     * 获取所有记录数
-     *
-     * @return int 返回所有记录数
-     */
-    public function findNumRows() {
-        $sql = $this->buildsql();
-        $res = $this->query($sql);
-        return $res->num_rows;
-    }
-
-    /** 
-     * 删除一行记录
-     * @return boolean
-     */
-    public function delRow() {
-        $this->_query['del'] = "DELETE";
-        $sql = $this->buildsql();
-        $res = $this->query($sql);
-        if ($res === FALSE) {
-            return FALSE;
-        }
-        return TRUE;
-    }
-
-    /** 
-     * 检查唯一性
-     *
-     * @param string $table 表名
-     * @param string $where 查询条件
-     * @param string $keyid 自动id
-     * @return boolean 存在返回FALSE,否则返回TRUE
-     */
-    public function chkUnique($table, $where, $keyid = 'id') {
-        $sql = "SELECT {$keyid} from {$table} WHERE {$where}";
-        $num = $this->getNumRows($sql);
-        if ($num > 0) {
-            return FALSE;
-        }
-        return TRUE;
-    }
-
-    /** 
-     * 执行select查询
-     * @return bool|array 失败返回FALSE,成功返回一维数组
-     */
-    public function findRow() {
-        $sql = $this->buildsql();
-        return $this->fetchRow($sql);
-    }
-
-    /** 
-     * 执行sql语句查询
-     * @param string $sql sql语句
-     * @return mixed 返回资源结果集或布尔值
-     */
-    public function query($sql) {
+    protected function _doQuery($sql = '') {
         $this->_sql = $sql;
-        $res = $this->db->query($sql);
-        if ($res === FALSE) {
-            if ($this->throw) {
-                throw new Exception("发生错误: 错误信息  {$this->getLastErr() } 相关sql语句 {$this->_sql}", $this->db->errno);
-            } else {
-                return FALSE;
-            }
-        }
-        return $res;
-    }
-
-    /** 
-     * 设置是否抛出sql异常
-     * @param bool $bool
-     */
-    public function setThrow($bool = FALSE) {
-        $this->throw = $bool;
-    }
-
-    /** 
-     * 执行sql脚本从文件
-     * @param file $sqlfile sql脚本文件路径
-     * @return boolean
-     */
-    public function buildSqlfile($sqlfile) {
-        $file = file($sqlfile);
-        if ($file === FALSE || empty($file)) {
-            return FALSE;
-        }
-        foreach ($file as $key => $val) {
-            if (preg_match('/^(-|#)/', $val) || trim($val) == '') {
-                continue;
-            }
-            $new[] = $val;
-        }
-        $sqls = split(';', join('', $new));
-        foreach ($sqls as $sql) {
-            $this->query($sql);
-        }
-        return TRUE;
-    }
-
-    /** 
-     * 获取一条数据
-     * @param string $sql sql语句
-     * @return array 一维数组
-     */
-    public function fetchRow($sql) {
-        $res = $this->query($sql);
-        $result = @$res->fetch_assoc();
+        $pdostmt = self::$_dbh->prepare($this->_sql); //prepare或者query 返回一个PDOStatement
+        $pdostmt->execute();
+        $result = $pdostmt->fetchAll(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    /** 
-     * 获取多条数据
-     * @param string $sql
-     * @return array 二维数组
+    /**
+     * 执行查询返回一条 主要针对 SELECT, SHOW 等指令
+     * @param string $sql sql指令
+     * @return mixed
      */
-    public function fetchAll($sql, $key = '') {
-        $res = $this->query($sql);
-        $result = array();
-        while ($row = $res->fetch_assoc()) {
-            if ($key) {
-                $result[$row[$key]] = $row;
-            } else {
-                $result[] = $row;
-            }
-        }
+    protected function _doOneQuery($sql = '') {
+        $this->_sql = $sql;
+        $pdostmt = self::$_dbh->prepare($this->_sql); //prepare或者query 返回一个PDOStatement
+        $pdostmt->execute();
+        $result = $pdostmt->fetch(\PDO::FETCH_ASSOC);
         return $result;
     }
 
-    /** 
-     * 获取所有记录数
-     *
-     * @param string $sql sql语句
-     * @return int 返回所有记录数
+    /**
+     * 执行语句 针对 INSERT, UPDATE 以及DELETE,exec结果返回受影响的行数
+     * @param string $sql sql指令
+     * @return integer
      */
-    public function getNumRows($sql) {
-        $res = $this->query($sql);
-        return $res->num_rows;
+    protected function _doExec($sql = '') {
+        $this->_sql = $sql;
+        return self::$_dbh->exec($this->_sql);
     }
 
-    /** 
-     * 返回最后查询自动生成的id
+    /**
+     * 执行sql语句，自动判断进行查询或者执行操作
+     * @param string $sql SQL指令
+     * @return mixed
      */
-    public function getLastId() {
-        return $this->db->insert_id;
+    public function doSql($sql = '') {
+        $queryIps = 'INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|LOAD DATA|SELECT .* INTO|COPY|ALTER|GRANT|REVOKE|LOCK|UNLOCK';
+        if (preg_match('/^\s*"?(' . $queryIps . ')\s+/i', $sql)) {
+            return $this->_doExec($sql);
+        } else {
+            //查询操作
+            return $this->_doQuery($sql);
+        }
     }
 
-    /** 
-     * 返回最后查询出现的错误信息
-     */
-    public function getLastErr() {
-        return $this->db->error;
-    }
-
-    /** 
-     * 获取最后一次执行的sql语句
-     *
-     * @return string sql
+    /**
+     * 获取最近一次查询的sql语句
+     * @return String 执行的SQL
      */
     public function getLastSql() {
         return $this->_sql;
     }
 
-    /** 
-     * 锁定表
-     * @param string $tabname 表名
-     * @param string $mode 模式
+    /**
+     * 插入方法
+     * @param string $tbName 操作的数据表名
+     * @param array $data 字段-值的一维数组
+     * @return int 受影响的行数
      */
-    public function locktab($tabname, $mode = 'READ') {
-        $this->query("LOCK TABLE {$tabname} {$mode}");
+    public function insert($tbName, array $data) {
+        $data = $this->_dataFormat(trim($this->_prefix).trim($tbName), $data);
+        if (!$data) { return; }
+        $sql = "INSERT INTO " . trim($this->_prefix).trim($tbName) . "(" . implode(',', array_keys($data)) . ") VALUES(" . implode(',', array_values($data)) . ")";
+        return $this->_doExec($sql);
+    }
+
+    /**
+     * 删除方法
+     * @param string $tbName 操作的数据表名
+     * @return int 受影响的行数
+     */
+    public function delete($tbName) {
+        //安全考虑,阻止全表删除
+        if (!trim($this->_where)) { return false; }
+        $sql = "DELETE FROM " . trim($this->_prefix).trim($tbName) . " " . $this->_where;
+        $this->_clear = 1;
+        $this->_clear();
+        return $this->_doExec($sql);
+    }
+
+    /**
+     * 更新函数
+     * @param string $tbName 操作的数据表名
+     * @param array $data 参数数组
+     * @return int 受影响的行数
+     */
+    public function update($tbName, array $data) {
+        //安全考虑,阻止全表更新
+        if (!trim($this->_where)) { return false; }
+        $data = $this->_dataFormat(trim($this->_prefix).trim($tbName), $data);
+        if (!$data) { return; }
+        $valArr = array();
+        foreach ($data as $k => $v) {
+            $valArr[] = $k . '=' . $v;
+        }
+        $valStr = implode(',', $valArr);
+        $sql = "UPDATE " . trim($this->_prefix).trim($tbName) . " SET " . trim($valStr) . " " . trim($this->_where);
+        return $this->_doExec($sql);
+    }
+
+    /**
+     * 查询函数
+     * @param string $tbName 操作的数据表名
+     * @return array 结果集
+     */
+    public function select($tbName = '', $srt = '') {
+        $sql = "SELECT " . trim($this->_field) . " FROM " . trim($this->_prefix).trim($tbName) . " " . trim($this->_where) . " " . trim($this->_order) . " " . trim($this->_limit);
+        $this->_clear = 1;
+        $this->_clear();
+        if(!$srt){
+            return $this->_doQuery(trim($sql));
+        } else {
+            return $this->_doOneQuery(trim($sql));
+        }
+    }
+
+    /**
+     * @param mixed $option 组合条件的二维数组，例：$option['field1'] = array(1,'=>','or')
+     * @return $this
+     */
+    public function where($option) {
+        if ($this->_clear > 0) {
+            $this->_clear();
+        }
+        $this->_where = ' WHERE ';
+        $logic = 'AND';
+        if (is_string($option)) {
+            $this->_where.= $option;
+        } elseif (is_array($option)) {
+            foreach ($option as $k => $v) {
+                if (is_array($v)) {
+                    $relative = isset($v[1]) ? $v[1] : '=';
+                    $logic = isset($v[2]) ? $v[2] : 'AND';
+                    $condition = ' (' . $this->_addChar($k) . ' ' . $relative . ' \'' . $v[0] . '\') ';
+                } else {
+                    $logic = 'AND';
+                    $condition = ' (' . $this->_addChar($k) . '=\'' . $v . '\') ';
+                }
+                $this->_where.= isset($mark) ? $logic . $condition : $condition;
+                $mark = 1;
+            }
+        }
         return $this;
     }
 
-    /** 
-     * 解锁表
+    /**
+     * 设置排序
+     * @param mixed $option 排序条件数组 例:array('sort'=>'desc')
+     * @return $this
      */
-    public function unlocktab() {
-        $this->query("UNLOCK TABLES");
-    }
-
-    /** 
-     * 执行锁定查询
-     */
-    public function execlockquery() {
-        $sql = $this->buildsql();
-    }
-
-    /** 
-     * 执行添加记录操作
-     * @param $data 要增加的数据,参数为数组.数组key为字段值,数组值为数据取值 格式:array('字段名' => 值);
-     * @param $table 数据表
-     * @return boolean
-     */
-    public function add($data, $table, $replace = false) {
-        if (!is_array($data) || $table == '' || count($data) == 0) {
-            return false;
+    public function order($option) {
+        if ($this->_clear > 0) {
+            $this->_clear();
         }
-        $fields = $values = array();
-        //遍历记录, 格式化字段名称与值
-        foreach ($data as $key => $val) {
-            $fields[] = "`{$table}`.`{$key}`";
-            $values[] = is_numeric($val) ? $val : "'{$val}'";
-        }
-        $field = join(',', $fields);
-        $value = join(',', $values);
-        unset($fields, $values);
-        $cmd = $replace ? 'REPLACE INTO' : 'INSERT INTO';
-        $sql = $cmd . ' `' . $table . '`(' . $field . ') VALUES (' . $value . ')';
-        $this->query($sql);
-        return $this->getLastId();
-    }
-
-    /** 
-     * 执行更新记录操作
-     * @param $table 数据表
-     * @param $data 要更新的数据内容,参数可以为数组也可以为字符串,建议数组.
-     *
-     * 为数组时数组 key 为字段值,数组值为数据取值
-     * 为字符串时[例：`name`='phpcms',`hits`=`hits`+1]。
-     * 为数组时[例: array('name'=>'phpcms','password'=>'123456')]
-     * 数组可使用array('name'=>'+=1', 'base'=>'-=1');程序会自动解析为`name` = `name` + 1, `base` = `base` - 1
-     *
-     * @param $where 更新数据时的条件
-     * @return boolean
-     */
-    public function update($table, $data, $where = '') {
-        if ($table == '' or $where == '') {
-            return false;
-        }
-        $where = ' WHERE ' . $where;
-        $field = '';
-        if (is_string($data) && $data != '') {
-            $field = $data;
-        } elseif (is_array($data) && count($data) > 0) {
-            $fields = array();
-            foreach ($data as $k => $v) {
-                switch (substr($v, 0, 2)) {
-                    case '+=':
-                        $v = substr($v, 2);
-                        if (is_numeric($v)) {
-                            $fields[] = "`{$k}`=`{$k}` + $v";
-                        } else {
-                            continue;
-                        }
-                    break;
-                    case '-=':
-                        $v = substr($v, 2);
-                        if (is_numeric($v)) {
-                            $fields[] = "`{$k}`=`{$k}` - $v";
-                        } else {
-                            continue;
-                        }
-                    break;
-                    default:
-                        $fields[] = "`{$k}`= $v";
-                }
+        $this->_order = ' ORDER BY ';
+        if (is_string($option)) {
+            $this->_order.= $option;
+        } elseif (is_array($option)) {
+            foreach ($option as $k => $v) {
+                $order = $this->_addChar($k) . ' ' . $v;
+                $this->_order.= isset($mark) ? ',' . $order : $order;
+                $mark = 1;
             }
-            $field = implode(',', $fields);
+        }
+        return $this;
+    }
+
+    /**
+     * 设置查询行数及页数
+     * @param int $page pageSize不为空时为页数，否则为行数
+     * @param int $pageSize 为空则函数设定取出行数，不为空则设定取出行数及页数
+     * @return $this
+     */
+    public function limit($page, $pageSize = null) {
+        if ($this->_clear > 0) {
+            $this->_clear();
+        }
+        if ($pageSize === null) {
+            $this->_limit = "LIMIT " . $page;
         } else {
-            return false;
+            $pageval = intval(($page - 1) * $pageSize);
+            $this->_limit = "LIMIT " . $pageval . "," . $pageSize;
         }
-        $sql = 'UPDATE `' . $table . '` SET ' . $field . $where;
-        return $this->query($sql);
+        return $this;
     }
 
-    /** 
-     * 执行删除记录操作
-     * @param $table 数据表
-     * @param $where 删除数据条件,不充许为空。
-     *               如果要清空表,使用empty方法
-     * @return boolean
+    /**
+     * 设置查询字段
+     * @param mixed $field 字段数组
+     * @return $this
      */
-    public function delete($table, $where = null) {
-        if ($table == '') {
-            return false;
+    public function field($field) {
+        if ($this->_clear > 0) {
+            $this->_clear();
         }
-        $sql = 'DELETE FROM `' . $table . '`';
-        if ($where) {
-            $sql.= " WHERE {$where}";
+        if (is_string($field)) {
+            $field = explode(',', $field);
         }
-        return $this->query($sql);
+        $nField = array_map(array($this, '_addChar'), $field);
+        $this->_field = implode(',', $nField);
+        return $this;
     }
 
-    /** 
-     * 自动提交
-     * @param BOOL $status 默认false关闭自动提交,设置为true时打开自动提交
+    /**
+     * 清理标记函数
      */
-    public function autocommit($status = FALSE) {
-        $this->db->autocommit($status);
+    protected function _clear() {
+        $this->_where = '';
+        $this->_order = '';
+        $this->_limit = '';
+        $this->_field = '*';
+        $this->_clear = 0;
     }
 
-    /** 
-     * 提交事务
+    /**
+     * 手动清理标记
+     * @return $this
+     */
+    public function clearKey() {
+        $this->_clear();
+        return $this;
+    }
+
+    /**
+     * 启动事务
+     * @return void
+     */
+    public function startTrans() {
+        //数据rollback 支持
+        if ($this->_trans == 0) {
+            self::$_dbh->beginTransaction();
+        }
+        $this->_trans++;
+        return;
+    }
+
+    /**
+     * 用于非自动提交状态下面的查询提交
+     * @return boolen
      */
     public function commit() {
-        $this->db->commit();
+        $result = true;
+        if ($this->_trans > 0) {
+            $result = self::$_dbh->commit();
+            $this->_trans = 0;
+        }
+        return $result;
     }
 
-    /** 
-     * 回滚事务
+    /**
+     * 事务回滚
+     * @return boolen
      */
     public function rollback() {
-        $this->db->rollback();
+        $result = true;
+        if ($this->_trans > 0) {
+            $result = self::$_dbh->rollback();
+            $this->_trans = 0;
+        }
+        return $result;
+    }
+
+    /**
+     * 关闭连接
+     * PHP 在脚本结束时会自动关闭连接
+     */
+    public function close() {
+        if (!is_null(self::$_dbh)) { self::$_dbh = null; }
     }
 
     public function __destruct() {
-        $this->db->close();
+        $this->close();
     }
-
 }

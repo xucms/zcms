@@ -26,7 +26,9 @@ class IndexController extends BaseController{
                 if(!parent::isPWD($user_pwd)) {
                     header('Location: ' . Api::request()->url);exit();
                 }
-                $dbData = Api::fun()->getDB()->field('*')->where('user_name = \''.trim($user_name).'\' and user_pwd = \''.trim(md5(Api::fun()->getRSA('re',$user_pwd))).'\'')->table('info_user')->findRow();
+                $option = array('user_name'=>trim($user_name),'user_pwd'=>array(trim(md5(Api::fun()->getRSA('re',$user_pwd))),'=','and'));
+                $dbData = Api::fun()->getDB()->where($option)->select('user',1);
+                //echo Api::fun()->getDB()->getLastSql(); // 最后一次运行 SQL 语句
                 if(!empty($dbData)) {
                     $verify = Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name'],$dbData['user_ok'],$dbData['user_ip'],$dbData['user_logintime']));
                     $_SESSION['user'] = md5($verify);

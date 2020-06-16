@@ -20,15 +20,15 @@ class Redis extends Common {
 
         // 配置 SESSION 保持位置
         ini_set('session.save_handler', 'redis');
-        ini_set('session.save_path', 'tcp://'.$host.':'.$port.'?auth='.$auth);
+        ini_set('session.save_path', 'tcp://'.trim($host).':'.trim($port).'?auth='.trim($auth));
 
         $this->redis = new \Redis();
-        $this->redis->connect($host, $port, $ttl) or die('Redis 连接失败!');
-        $this->redis->auth($auth);
-        $this->redis->select($db);
-        $this->usertime = $usertime;
-        $this->timeout = $timeout;
-        $this->prefix = $prefix;
+        $this->redis->connect(trim($host), trim($port), trim($ttl)) or die('Redis 连接失败!');
+        $this->redis->auth(trim($auth));
+        $this->redis->select(trim($db));
+        $this->usertime = trim($usertime);
+        $this->timeout = trim($timeout);
+        $this->prefix = trim($prefix);
 
         session_set_save_handler(
             array($this,"open"),
@@ -42,11 +42,11 @@ class Redis extends Common {
         // 下面这行代码可以防止使用对象作为会话保存管理器时可能引发的非预期行为
         register_shutdown_function('session_write_close');
 
-        session_set_cookie_params($usertime, "/", $sedomain, $scheme, true);
-        session_name($sename);
+        session_set_cookie_params(trim($usertime), "/", trim($sedomain), trim($scheme), true);
+        session_name(trim($sename));
         session_start();
-        if (isset($_COOKIE[$sename])) {
-            setcookie($sename, $_COOKIE[$sename], time()+$usertime, '/', $sedomain, $scheme , true);
+        if (isset($_COOKIE[trim($sename)])) {
+            setcookie(trim($sename), trim($_COOKIE[$sename]), time()+trim($usertime), '/', trim($sedomain), trim($scheme), true);
         }
     }
 
