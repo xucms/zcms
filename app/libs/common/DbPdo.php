@@ -1,38 +1,6 @@
 <?php
 namespace app\libs\common;
 
-/*
-//插入
-$data = array(
-    'sid'=>101,
-    'aa'=>123456,
-    'bbc'=>'aaaaaaaaaaaaaa',
-    );
-$mysql->insert('t_table',$data);
-//查询
-$res = $mysql->field(array('sid','aa','bbc'))
-    ->order(array('sid'=>'desc','aa'=>'asc'))
-    ->where(array('sid'=>"101",'aa'=>array('123455','>','or')))
-    ->limit(1,2)
-    ->select('t_table');
-$res = $mysql->field('sid,aa,bbc')
-    ->order('sid desc,aa asc')
-    ->where('sid=101 or aa>123455')
-    ->limit(1,2)
-    ->select('t_table');
-//获取最后执行的sql语句
-$sql = $mysql->getLastSql();
-//直接执行sql语句
-$sql = "show tables";
-$res = $mysql->doSql($sql);
-//事务
-$mysql->startTrans();
-$mysql->where(array('sid'=>102))->update('t_table',array('aa'=>666666));
-$mysql->where(array('sid'=>103))->update('t_table',array('bbc'=>'呵呵8888呵呵'));
-$mysql->where(array('sid'=>104))->delete('t_table');
-$mysql->commit();
-*/
-
 class DbPdo extends Common {
 
     /**
@@ -54,6 +22,11 @@ class DbPdo extends Common {
      * 初始化 WHERE 默认值
      */
     protected $_where = '';
+
+    /**
+     * 初始化 JOIN 默认值
+     */
+    protected $_join = '';
 
     /**
      * 初始化 ORDER 默认值
@@ -318,6 +291,52 @@ class DbPdo extends Common {
     }
 
     /**
+     * 查询函数
+     * @param string $tbName 操作的数据表名
+     * @return array 结果集
+     */
+    public function find($tbName = '', $one = '') {
+        $sql = 'SELECT ' . trim($this->_field) . ' FROM ' . trim($this->_prefix).trim($tbName) .' AS '. trim($tbName) . ' ' . trim($this->_join) . ' ' . trim($this->_where) . ' ' . trim($this->_order) . ' ' . trim($this->_limit);
+        $this->_clear = 1;
+        $this->_clear();
+        if(!$one){
+            return $this->_doQuery(trim($sql));
+        } else {
+            return $this->_doOneQuery(trim($sql));
+        }
+    }
+
+    /**
+     * 查询SQL组装 join
+     * INNER JOIN（内连接,或等值连接）：获取两个表中字段匹配关系的记录。
+     * LEFT JOIN（左连接）：获取左表所有记录，即使右表没有对应匹配的记录。
+     * RIGHT JOIN（右连接）： 与 LEFT JOIN 相反，用于获取右表所有记录，即使左表没有对应匹配的记录。
+     * @param  mixed $option 关联的表名的二维数组 例：$option = array('type', 'table', array('a', '=', 'b'));
+     * @return $this
+     */
+    public function join($option) {
+        if ($this->_clear > 0) {
+            $this->_clear();
+        }
+        $this->_join = '';
+        $conditionis = '';
+        if (!empty($option)&&is_array($option)) {
+            if (is_array($option[2][0])) {
+                foreach ($option[2] as $k => $v) {
+                    $condition = $v[0] . $v[1] . $v[2];
+                    $logic = ' AND ';
+                    $conditionis.= isset($mark) ? $logic . $condition : $condition;
+                    $mark = 1;
+                }
+            } else {
+                $conditionis = $option[2][0] . $option[2][1] . $option[2][2];
+            }
+            $this->_join .= ' ' . strtoupper($option[0]) . ' JOIN ' . trim($this->_prefix).trim($option[1]) .' AS '.trim($option[1]) . ' ON ' . $conditionis . ' ';
+        }
+        return $this;
+    }
+
+    /**
      * @param mixed $option 组合条件的二维数组，例：$option['field1'] = array(1,'=>','or')
      * @return $this
      */
@@ -409,6 +428,7 @@ class DbPdo extends Common {
      */
     protected function _clear() {
         $this->_where = '';
+        $this->_join = '';
         $this->_order = '';
         $this->_limit = '';
         $this->_field = '*';
