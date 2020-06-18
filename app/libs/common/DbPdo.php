@@ -58,7 +58,7 @@ class DbPdo extends Common {
      * @param array $conf 数据库配置
      */
     public function __construct($dbhost = null, $dbuser = null, $dbpass = null, $dbname = null, $dbcharset = null, $dbport = null, $dbprefix = null) {
-        class_exists('PDO') or die("PDO: class not exists.");
+        class_exists('PDO') or die('PDO: class not exists.');
         $this->_host = trim($dbhost);
         $this->_port = trim($dbport);
         $this->_user = trim($dbuser);
@@ -236,7 +236,7 @@ class DbPdo extends Common {
     public function insert($tbName, array $data) {
         $data = $this->_dataFormat(trim($this->_prefix).trim($tbName), $data);
         if (!$data) { return; }
-        $sql = "INSERT INTO " . trim($this->_prefix).trim($tbName) . "(" . implode(',', array_keys($data)) . ") VALUES(" . implode(',', array_values($data)) . ")";
+        $sql = 'INSERT INTO ' . trim($this->_prefix).trim($tbName) . '(' . implode(',', array_keys($data)) . ') VALUES(' . implode(',', array_values($data)) . ')';
         return $this->_doExec($sql);
     }
 
@@ -248,7 +248,7 @@ class DbPdo extends Common {
     public function delete($tbName) {
         //安全考虑,阻止全表删除
         if (!trim($this->_where)) { return false; }
-        $sql = "DELETE FROM " . trim($this->_prefix).trim($tbName) . " " . $this->_where;
+        $sql = 'DELETE FROM ' . trim($this->_prefix).trim($tbName) . ' ' . $this->_where;
         $this->_clear = 1;
         $this->_clear();
         return $this->_doExec($sql);
@@ -270,7 +270,7 @@ class DbPdo extends Common {
             $valArr[] = $k . '=' . $v;
         }
         $valStr = implode(',', $valArr);
-        $sql = "UPDATE " . trim($this->_prefix).trim($tbName) . " SET " . trim($valStr) . " " . trim($this->_where);
+        $sql = 'UPDATE ' . trim($this->_prefix).trim($tbName) . ' SET ' . trim($valStr) . ' ' . trim($this->_where);
         return $this->_doExec($sql);
     }
 
@@ -280,26 +280,10 @@ class DbPdo extends Common {
      * @return array 结果集
      */
     public function select($tbName = '', $srt = '') {
-        $sql = "SELECT " . trim($this->_field) . " FROM " . trim($this->_prefix).trim($tbName) . " " . trim($this->_where) . " " . trim($this->_order) . " " . trim($this->_limit);
-        $this->_clear = 1;
-        $this->_clear();
-        if(!$srt){
-            return $this->_doQuery(trim($sql));
-        } else {
-            return $this->_doOneQuery(trim($sql));
-        }
-    }
-
-    /**
-     * 查询函数
-     * @param string $tbName 操作的数据表名
-     * @return array 结果集
-     */
-    public function find($tbName = '', $one = '') {
         $sql = 'SELECT ' . trim($this->_field) . ' FROM ' . trim($this->_prefix).trim($tbName) .' AS '. trim($tbName) . ' ' . trim($this->_join) . ' ' . trim($this->_where) . ' ' . trim($this->_order) . ' ' . trim($this->_limit);
         $this->_clear = 1;
         $this->_clear();
-        if(!$one){
+        if(!$srt){
             return $this->_doQuery(trim($sql));
         } else {
             return $this->_doOneQuery(trim($sql));
@@ -321,17 +305,33 @@ class DbPdo extends Common {
         $this->_join = '';
         $conditionis = '';
         if (!empty($option)&&is_array($option)) {
-            if (is_array($option[2][0])) {
-                foreach ($option[2] as $k => $v) {
-                    $condition = $v[0] . $v[1] . $v[2];
-                    $logic = ' AND ';
-                    $conditionis.= isset($mark) ? $logic . $condition : $condition;
-                    $mark = 1;
+            if(is_array($option[0])) {
+                foreach ($option as $k => $v) {
+                    if (is_array($v[2][0])) {
+                        foreach ($v[2] as $l => $i) {
+                            $condition = $i[0] . $i[1] . $i[2];
+                            $logic = ' AND ';
+                            $conditionis.= isset($mark) ? $logic . $condition : $condition;
+                            $mark = 1;
+                        }
+                    } else {
+                        $conditionis = $v[2][0] . $v[2][1] . $v[2][2];
+                    }
+                    $this->_join .= ' ' . strtoupper($v[0]) . ' JOIN ' . trim($this->_prefix).trim($v[1]) .' AS '.trim($v[1]) . ' ON ' . $conditionis . ' ';
                 }
             } else {
-                $conditionis = $option[2][0] . $option[2][1] . $option[2][2];
+                if (is_array($option[2][0])) {
+                    foreach ($option[2] as $k => $v) {
+                        $condition = $v[0] . $v[1] . $v[2];
+                        $logic = ' AND ';
+                        $conditionis.= isset($mark) ? $logic . $condition : $condition;
+                        $mark = 1;
+                    }
+                } else {
+                    $conditionis = $option[2][0] . $option[2][1] . $option[2][2];
+                }
+                $this->_join .= ' ' . strtoupper($option[0]) . ' JOIN ' . trim($this->_prefix).trim($option[1]) .' AS '.trim($option[1]) . ' ON ' . $conditionis . ' ';
             }
-            $this->_join .= ' ' . strtoupper($option[0]) . ' JOIN ' . trim($this->_prefix).trim($option[1]) .' AS '.trim($option[1]) . ' ON ' . $conditionis . ' ';
         }
         return $this;
     }
@@ -398,10 +398,10 @@ class DbPdo extends Common {
             $this->_clear();
         }
         if ($pageSize === null) {
-            $this->_limit = "LIMIT " . $page;
+            $this->_limit = 'LIMIT ' . $page;
         } else {
             $pageval = intval(($page - 1) * $pageSize);
-            $this->_limit = "LIMIT " . $pageval . "," . $pageSize;
+            $this->_limit = 'LIMIT ' . $pageval . ',' . $pageSize;
         }
         return $this;
     }

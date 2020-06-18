@@ -15,9 +15,10 @@ class IndexController extends BaseController{
         parent::__checkManagePrivate();
         $config = Api::request()->data;
 
-        $option = array('user.user_name','=','admin.admin_name');
-        $dbData = Api::fun()->getDB()->field('user.user_name,admin.admin_name')->join(array('LEFT','admin',$option))->find('user',1);
-        print_r($dbData);
+        //$option = array('user.user_name','=','admin.admin_name');
+        //$dbData = Api::fun()->getDB()->field('user.user_name,admin.admin_name')->join(array('LEFT','admin',$option))->select('user',1);
+        //$option = array('user_name'=>'admin');
+        //$dbData = Api::fun()->getDB()->where($option)->select('user',1);
 
         if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
             $token = unserialize($_SESSION['token']);
