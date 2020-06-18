@@ -15,10 +15,16 @@ class IndexController extends BaseController{
         parent::__checkManagePrivate();
         $config = Api::request()->data;
 
+        //$data = array('user_name'=>'tongji','user_pwd'=>'d6ceebf494d774931e92e45f834d490f','user_ok'=>'1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1','user_email'=>'10010@qq.com','user_ip'=>'127.0.0.1','user_face'=>'','user_logintime'=>1311954804);
+        //$dbData = Api::fun()->getDB()->insert('user',$data);
         //$option = array('user.user_name','=','admin.admin_name');
         //$dbData = Api::fun()->getDB()->field('user.user_name,admin.admin_name')->join(array('LEFT','admin',$option))->select('user',1);
         //$option = array('user_name'=>'admin');
         //$dbData = Api::fun()->getDB()->where($option)->select('user',1);
+        //$dbData = Api::fun()->getDB()->startTrans();
+        //$dbData = Api::fun()->getDB()->where(array('user_name'=>'user'))->update('user',array('user_face'=>'测试一下'));
+        //$dbData = Api::fun()->getDB()->where(array('user_name'=>'tongji'))->delete('user');
+        //$dbData = Api::fun()->getDB()->commit();
 
         if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
             $token = unserialize($_SESSION['token']);
