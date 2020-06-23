@@ -12,7 +12,7 @@ class BaseController {
      */
     protected static function __checkManagePrivate() {
         Api::fun()->getSESS();
-        if(empty($_COOKIE['GUID'])||(!empty($_COOKIE['TREE'])&&md5(session_id())!=trim($_COOKIE['TREE']))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5($_COOKIE['Q']))) {
+        if(empty($_COOKIE['GUID'])||(!empty($_COOKIE['TREE'])&&md5(session_id())!=trim($_COOKIE['TREE']))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5($_COOKIE['Q']))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
             header('Location: /error.html');
             exit();
         }
@@ -21,6 +21,11 @@ class BaseController {
                 header('Location: /admin-index');
                 exit();
             }
+            if((time()-$_SESSION['t'])>Api::fun()->getLookTime()&&Api::request()->url!='/admin-look') {
+                header('Location: /admin-look');
+                exit();
+            }
+            $_SESSION['t'] = time();
             setcookie('Q', $_COOKIE['Q'], time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
             setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
         }

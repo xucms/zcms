@@ -42,6 +42,7 @@ class IndexController extends BaseController{
                 $dbData = Api::fun()->getDB()->where($option)->select('user',1);
                 //echo Api::fun()->getDB()->getLastSql(); // 最后一次运行 SQL 语句
                 if(!empty($dbData)) {
+                    $_SESSION['t'] = time();
                     $verify = Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name'],$dbData['user_ok'],$dbData['user_ip'],$dbData['user_logintime']));
                     $_SESSION['user'] = md5($verify);
                     setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
@@ -54,7 +55,8 @@ class IndexController extends BaseController{
         }
         $pubKey = Api::fun()->getKey();
         $token = Api::fun()->getToken();
-        Api::render('admin/index', array('title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
+        $Domain = Api::fun()->getDomain();
+        Api::render('admin/index', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
     }
 
 }

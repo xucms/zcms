@@ -17,6 +17,12 @@ class Common extends app\Engine {
         return trim($config['usertime']);
     }
 
+    // 锁屏时间
+    public function getLookTime() {
+        $config = $this->get('web.config');
+        return trim($config['look']);
+    }
+
     // RSA 第三次公共证书
     public function getKey($name = 'public') {
         $config = $this->get('web.config');  // 密钥
