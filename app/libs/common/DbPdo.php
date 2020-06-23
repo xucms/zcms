@@ -89,6 +89,7 @@ class DbPdo extends Common {
         }
         $dbh->exec('SET NAMES '.$this->_charset);
         self::$_dbh = $dbh;
+        $dsn = $this->_user = $this->_pass = $this->_charset = null;
     }
 
     /**
@@ -130,6 +131,7 @@ class DbPdo extends Common {
         $stmt = self::$_dbh->prepare($sql);
         $stmt->execute();
         $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $stmt->PDOStatement = null;
         $ret = array();
         foreach ($result as $key => $value) {
             $ret[$value['COLUMN_NAME']] = 1;
@@ -178,6 +180,7 @@ class DbPdo extends Common {
         $pdostmt = self::$_dbh->prepare($this->_sql); //prepare或者query 返回一个PDOStatement
         $pdostmt->execute();
         $result = $pdostmt->fetchAll(\PDO::FETCH_ASSOC);
+        $pdostmt->PDOStatement = null;
         return $result;
     }
 
@@ -191,6 +194,7 @@ class DbPdo extends Common {
         $pdostmt = self::$_dbh->prepare($this->_sql); //prepare或者query 返回一个PDOStatement
         $pdostmt->execute();
         $result = $pdostmt->fetch(\PDO::FETCH_ASSOC);
+        $pdostmt->PDOStatement = null;
         return $result;
     }
 
