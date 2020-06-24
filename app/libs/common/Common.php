@@ -35,7 +35,7 @@ class Common extends app\Engine {
         $config = $this->get('web.config');
         $token = trim(md5(md5($request).md5(uniqid('',true).md5($string).md5($this->getKey()))));
         $_SESSION['token'] = serialize(array($token,time(),$config['token']));
-        return trim($token);
+        return preg_replace('/\s+/','',$this->escape(trim($token)));
     }
 
     // 设置SESSION链接
@@ -166,6 +166,22 @@ class Common extends app\Engine {
             default:
                 return 'RSA Error: Data not';
         }
+    }
+
+    // 将二进制转换十六进制
+    public function escape($string, $in_encoding = 'UTF-8',$out_encoding = 'UCS-2') {
+        $return = '';
+        if (function_exists('mb_get_info')) {
+            for($x = 0; $x<mb_strlen($string, $in_encoding); $x++) {
+                $str = mb_substr($string, $x, 1, $in_encoding);
+                if (strlen($str)>1) { // 多字节字符
+                    $return .= '%'.'u' . strtoupper(bin2hex(mb_convert_encoding($str, $out_encoding, $in_encoding)));
+                } else {
+                    $return .= '%' . strtoupper(bin2hex($str));
+                }
+            }
+        }
+        return str_replace('%', ' ', $return);
     }
 
     // 修复 HTML 标签闭合问题（检查并补全）

@@ -6,8 +6,10 @@
 <script src="/public/creator/jquery/jquery.min.js"></script>
 <script src="/public/creator/jquery/jquery.cookie.js"></script>
 <script src="/public/creator/jquery/jsencrypt.min.js"></script>
+<script src="/public/creator/js/common.js"></script>
 <link rel="stylesheet" type="text/css" href="/public/creator/css/common.min.css">
 <script>$.cookie('GUID', '1', { expires: 7, path: '/', domain: '{$domain}' });</script>
+<script>getUserIP(function(ip){$('#ip').val(ip);});</script>
 </head>
 <body>
 
@@ -18,6 +20,7 @@
     <input type="password" name="user_pwd" id="user_pwd" value="" autocomplete="off" placeholder="密码" />
     <input type="hidden" name="satoken" id="satoken" value="{$token}" autocomplete="off" class="hide"/>
     <input type="hidden" name="pubKey" id="pubKey" value="{$pubKey}" autocomplete="off" class="hide"/>
+    <input type="hidden" name="ip" id="ip" value="" autocomplete="off" class="hide"/>
     <input type="submit" name="submit" id="loginsubmit" value="登录"/>
 </form>
 

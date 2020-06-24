@@ -7,6 +7,7 @@
 <script src="/public/creator/jquery/jquery.cookie.js"></script>
 <link rel="stylesheet" type="text/css" href="/public/creator/css/common.min.css">
 <script>$.cookie('GUID', '1', { expires: 7, path: '/', domain: '{$domain}' });</script>
+<noscript>你的浏览器没有打开JavaScript支持，无法正常使用本页面</noscript>
 </head>
 <body>
 <h1>{$title}</h1>

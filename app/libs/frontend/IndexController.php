@@ -40,8 +40,6 @@ class IndexController extends BaseController{
 
         //echo Api::fun()->fixHtml('<div><p>百度一下</p>');
 
-        //$token = Api::fun()->getToken();
-
         $Domain = Api::fun()->getDomain();
         Api::render('index', array('domain' => $Domain,'title' => '地球村'));
     }

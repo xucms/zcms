@@ -28,7 +28,7 @@ class IndexController extends BaseController{
 
         if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
             $token = unserialize($_SESSION['token']);
-            if(trim($token[0])==trim($config['satoken'])&&trim($token[2])>(time()-trim($token[1]))) {
+            if(trim($token[0])===trim(hex2bin($config['satoken']))&&trim($token[2])>(time()-trim($token[1]))) {
                 $_SESSION['token'] = 0;
                 $user_name = trim($config['user_name']);
                 if(!parent::isNames($user_name)) {
@@ -43,7 +43,7 @@ class IndexController extends BaseController{
                 //echo Api::fun()->getDB()->getLastSql(); // 最后一次运行 SQL 语句
                 if(!empty($dbData)) {
                     $_SESSION['t'] = time();
-                    $verify = Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name'],$dbData['user_ok'],$dbData['user_ip'],$dbData['user_logintime']));
+                    $verify = Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name'],$dbData['user_ok'],trim(Api::request()->user_agent),trim(Api::request()->ip),$dbData['user_logintime']));
                     $_SESSION['user'] = md5($verify);
                     setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
                     setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
