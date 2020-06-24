@@ -15,7 +15,7 @@ class IndexController extends BaseController{
         parent::__checkManagePrivate();
         $config = Api::request()->data;
 
-        //$data = array('user_name'=>'tongji','user_pwd'=>'d6ceebf494d774931e92e45f834d490f','user_ok'=>'1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1','user_email'=>'10010@qq.com','user_ip'=>'127.0.0.1','user_face'=>'','user_logintime'=>1311954804);
+        //$data = array('user_name'=>'tongji','user_pwd'=>'d6ceebf494d774931e92e45f834d490f','user_ok'=>'1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1','user_look'=>'d6ceebf494d774931e92e45f834d490f','user_email'=>'10010@qq.com','user_ip'=>'127.0.0.1','user_logintime'=>1311954804);
         //$dbData = Api::fun()->getDB()->insert('user',$data);
         //$option = array('user.user_name','=','admin.admin_name');
         //$dbData = Api::fun()->getDB()->field('user.user_name,admin.admin_name')->join(array('LEFT','admin',$option))->select('user',1);
