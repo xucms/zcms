@@ -21,8 +21,8 @@ class BaseController {
                 header('Location: /admin-index');
                 exit();
             }
-            if((time()-$_SESSION['t'])>Api::fun()->getLookTime()&&Api::request()->url!='/admin-look') {
-                header('Location: /admin-look');
+            if((time()-$_SESSION['t'])>Api::fun()->getLockTime()&&Api::request()->url!='/admin-lock') {
+                header('Location: /admin-lock');
                 exit();
             }
             $_SESSION['t'] = time();

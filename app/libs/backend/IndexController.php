@@ -15,7 +15,7 @@ class IndexController extends BaseController{
         parent::__checkManagePrivate();
         $config = Api::request()->data;
 
-        //$data = array('user_name'=>'tongji','user_pwd'=>'d6ceebf494d774931e92e45f834d490f','user_ok'=>'1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1','user_look'=>'d6ceebf494d774931e92e45f834d490f','user_email'=>'10010@qq.com','user_ip'=>'127.0.0.1','user_logintime'=>1311954804);
+        //$data = array('user_name'=>'tongji','user_pwd'=>'d6ceebf494d774931e92e45f834d490f','user_ok'=>'1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1','user_lock'=>'d6ceebf494d774931e92e45f834d490f','user_email'=>'10010@qq.com','user_ip'=>'127.0.0.1','user_logintime'=>1311954804);
         //$dbData = Api::fun()->getDB()->insert('user',$data);
         //$option = array('user.user_name','=','admin.admin_name');
         //$dbData = Api::fun()->getDB()->field('user.user_name,admin.admin_name')->join(array('LEFT','admin',$option))->select('user',1);
@@ -59,4 +59,16 @@ class IndexController extends BaseController{
         Api::render('admin/index', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
     }
 
+    /**
+     * 解锁界面
+     */
+    public static function lock() {
+        parent::__checkManagePrivate();
+        $config = Api::request()->data;
+
+        $pubKey = Api::fun()->getKey();
+        $token = Api::fun()->getToken();
+        $Domain = Api::fun()->getDomain();
+        Api::render('admin/lock', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
+    }
 }

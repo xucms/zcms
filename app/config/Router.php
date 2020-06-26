@@ -8,7 +8,7 @@ return array(
     ),
     'admin' => array(
         array('GET|POST /login', 'backend\Index:index'),
-        array('GET|POST /admin-look', 'backend\Index:index'),
+        array('GET|POST /admin-lock', 'backend\Index:lock'),
         array('GET|POST /admin-index', 'backend\Index:index'),
     ),
     'list' => array(
