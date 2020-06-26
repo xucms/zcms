@@ -44,6 +44,11 @@ class IndexController extends BaseController{
                 if(!empty($dbData)) {
                     $_SESSION['t'] = time();
                     $verify = Api::fun()->getXTea(array($dbData['user_email'],$dbData['user_name'],$dbData['user_ok'],trim(Api::request()->user_agent),trim(Api::request()->ip),$dbData['user_logintime']));
+                    $ssid = Api::fun()->getSSID()->getid(md5(trim($dbData['user_name'])));
+                    if(!empty($ssid)){
+                        Api::fun()->getSESS()->destroy(trim($ssid));
+                    }
+                    Api::fun()->getSSID()->setid(md5(trim($dbData['user_name'])),trim(session_id()));
                     $_SESSION['user'] = md5($verify);
                     setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
                     setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);

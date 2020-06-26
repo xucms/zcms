@@ -18,9 +18,9 @@ class Common extends app\Engine {
     }
 
     // 锁屏时间
-    public function getLookTime() {
+    public function getLockTime() {
         $config = $this->get('web.config');
-        return trim($config['look']);
+        return trim($config['lock']);
     }
 
     // RSA 第三次公共证书
@@ -43,7 +43,7 @@ class Common extends app\Engine {
         if (!isset(self::$dbInstances[$name])) {
             $config = $this->get('web.config');
             $request = $this->request()->scheme;
-            $this->loader->register('getRedisSESS', 'app\libs\common\Redis',array (
+            $this->loader->register('getRedisSESS', 'app\libs\common\RedisSESS',array (
                 $config[$name.'.host'],   // 服务器连接地址。默认='127.0.0.1'
                 $config[$name.'.port'],   // 端口号。默认='6379'
                 $config[$name.'.auth'],   // 连接密码，如果有设置密码的话
@@ -67,6 +67,30 @@ class Common extends app\Engine {
             }
         }
         return self::$dbInstances[$name];
+    }
+
+    // 设置SESSION_ID链接
+    public function getSSID($name = 'user') {
+        if (!isset(self::$dbInstancesi[$name])) {
+            $config = $this->get('web.config');
+            $this->loader->register('getRedisSSID', 'app\libs\common\RedisSSID',array (
+                $config[$name.'.host'],   // 服务器连接地址。默认='127.0.0.1'
+                $config[$name.'.port'],   // 端口号。默认='6379'
+                $config[$name.'.auth'],   // 连接密码，如果有设置密码的话
+                $config[$name.'.db'],     // 缓存库选择。默认0
+                $config[$name.'.ttl'],    // 连接超时时间（秒）。默认10
+            ));
+            try {
+                $dbs = $this->getRedisSSID();
+                if (!$dbs) {
+                    throw new \Exception();
+                }
+                self::$dbInstancesi[$name] = $dbs;
+            } catch (\Exception $e) {
+                die(json_encode(array('code'=>500, 'msg'=>'Redis数据库连接失败', 'data'=>false), JSON_UNESCAPED_UNICODE));
+            }
+        }
+        return self::$dbInstancesi[$name];
     }
 
     // 设置数据库链接
