@@ -14,7 +14,7 @@ class RedisSSID extends Common {
      *
      * @var string
      */
-    private $prefix;
+    private $prefix = null;
 
     public function __construct($host = '127.0.0.1', $port = '6379', $auth = null, $db = '0', $ttl = '10', $prefix = 'SSID:') {
         $this->redis = new \Redis();

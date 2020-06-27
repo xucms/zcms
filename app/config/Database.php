@@ -2,13 +2,13 @@
 return array(
 # ======> 公共配置
     # SESSION 数据用户未登录过期时间 秒
-    'timeout' => '60',
+    'timeout' => '30',
     # SESSION 数据用户登陆后过期时间 秒
     'usertime' => '86400',
     # TOKEN 有效时长 秒
     'token' => '120',
     # 登陆锁屏时间 秒
-    'look' => '3600',
+    'lock' => '120',
 # ======> Mysql数据库配置
     # 数据库主机地址
     'db.host' => '127.0.0.1',

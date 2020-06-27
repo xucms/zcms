@@ -7,14 +7,14 @@ class RedisSESS extends Common {
      * redis连接句柄
      * @var Redis $redis
      */
-    private $redis;
+    private $redis = null;
 
     /**
      * Table prefix
      *
      * @var string
      */
-    private $prefix;
+    private $prefix = null;
 
     public function __construct($host = '127.0.0.1', $port = '6379', $auth = null, $db = '0', $ttl = '10', $usertime = '3600', $timeout = '3600', $sename = null, $sedomain = null, $scheme, $prefix = 'SSCC:') {
 

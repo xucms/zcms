@@ -17,6 +17,12 @@ class BaseController {
             exit();
         }
         if(!empty($_SESSION['user'])&&!empty($_COOKIE['Q'])&&(trim($_SESSION['user'])==md5($_COOKIE['Q']))) {
+            $sess = json_decode(Api::fun()->getXTea($_COOKIE['Q'],'d'), true);
+            $ssid = Api::fun()->getSSID()->getid(md5(trim($sess['u'])));
+            if(empty($sess['id'])||empty($ssid)||$sess['id']!=session_id()||$ssid!=session_id()) {
+                header('Location: /error.html');
+                exit();
+            }
             if(Api::request()->url=='/login') {
                 header('Location: /admin-index');
                 exit();
