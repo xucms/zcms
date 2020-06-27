@@ -15,32 +15,5 @@
 
 <h1>{$title}</h1>
 
-<form name="loginForm" id="login" action="/login" method="post">
-    <input type="text" name="user_name" id="user_name" value="" autocomplete="off" placeholder="手机/邮箱/用户名" />
-    <input type="password" name="user_pwd" id="user_pwd" value="" autocomplete="off" placeholder="密码" />
-    <input type="hidden" name="satoken" id="satoken" value="{$token}" autocomplete="off" class="hide"/>
-    <input type="hidden" name="pubKey" id="pubKey" value="{$pubKey}" autocomplete="off" class="hide"/>
-    <input type="hidden" name="ip" id="ip" value="" autocomplete="off" class="hide"/>
-    <input type="submit" name="submit" id="loginsubmit" value="登录"/>
-</form>
-
-<script type="text/javascript">
-$(function() {
-  var t = $('#user_pwd');
-  var k = $('#pubKey');
-  t.focus(function() {
-    t.val('');
-  });
-  $("#loginsubmit").click(function() {
-    if(t.val()!==''){
-      var encrypt = new JSEncrypt();
-      encrypt.setPublicKey(window.atob(k.val()));
-      var encrypted = encrypt.encrypt(t.val());
-      t.val(encrypted);
-    }
-  });
-});
-</script>
-
 </body>
 </html>

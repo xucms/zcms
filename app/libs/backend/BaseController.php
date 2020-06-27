@@ -12,14 +12,16 @@ class BaseController {
      */
     protected static function __checkManagePrivate() {
         Api::fun()->getSESS();
-        if(empty($_COOKIE['GUID'])||(!empty($_COOKIE['TREE'])&&md5(session_id())!=trim($_COOKIE['TREE']))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5($_COOKIE['Q']))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
+        $seid = Api::fun()->getSessName();
+        if(empty(Api::request()->cookies->GUID)||(!empty(Api::request()->cookies->TREE)&&md5(Api::request()->cookies->$seid)!=trim(Api::request()->cookies->TREE))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5(Api::request()->cookies->Q))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
             header('Location: /error.html');
             exit();
         }
-        if(!empty($_SESSION['user'])&&!empty($_COOKIE['Q'])&&(trim($_SESSION['user'])==md5($_COOKIE['Q']))) {
-            $sess = json_decode(Api::fun()->getXTea($_COOKIE['Q'],'d'), true);
+        if(!empty($_SESSION['user'])&&!empty(Api::request()->cookies->Q)&&(trim($_SESSION['user'])===md5(Api::request()->cookies->Q))) {
+            $sess = json_decode(Api::fun()->getXTea(Api::request()->cookies->Q,'d'), true);
             $ssid = Api::fun()->getSSID()->getid(md5(trim($sess['u'])));
-            if(empty($sess['id'])||empty($ssid)||$sess['id']!=session_id()||$ssid!=session_id()) {
+            if(empty($sess['id'])||empty($ssid)||$sess['id']!=Api::request()->cookies->$seid||$ssid!=Api::request()->cookies->$seid) {
+                $_SESSION['user'] = 0;
                 header('Location: /error.html');
                 exit();
             }
@@ -32,8 +34,9 @@ class BaseController {
                 exit();
             }
             $_SESSION['t'] = time();
-            setcookie('Q', $_COOKIE['Q'], time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
-            setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
+            Api::fun()->getSSID()->setid(md5(trim($sess['u'])),trim($sess['id']),Api::fun()->getDomTime());
+            setcookie('Q', Api::request()->cookies->Q, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
+            setcookie('TREE', md5(Api::request()->cookies->$seid), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
         }
     }
 

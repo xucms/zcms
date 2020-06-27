@@ -11,6 +11,12 @@ class Common extends app\Engine {
         return trim($config['sess.domain']);
     }
 
+    // 获取 SESSION_NAME
+    public function getSessName() {
+        $config = $this->get('web.config');
+        return trim($config['sess.name']);
+    }
+
     // 作用域有效时间
     public function getDomTime() {
         $config = $this->get('web.config');
@@ -33,7 +39,7 @@ class Common extends app\Engine {
     public function getToken($string = '') {
         $request = $this->request()->user_agent;
         $config = $this->get('web.config');
-        $token = trim(md5(md5($request).md5(uniqid('',true).md5($string).md5($this->getKey()))));
+        $token = trim(md5(md5($request).md5(uniqid('',true).md5($string).md5($this->getKey('token')))));
         $_SESSION['token'] = serialize(array($token,time(),$config['token']));
         return preg_replace('/\s+/','',$this->escape(trim($token)));
     }
@@ -125,10 +131,10 @@ class Common extends app\Engine {
         $srt = $this->getTea();
         switch ($id) {
             case 'e':
-                return str_replace(array('+', '/', '='), array('-', '_', '~'),$this->encrypt(str_replace(array('+', '/', '='), array('-', '_', '~'),$srt->XEncrypt($data, md5($this->getKey()))), substr(md5($this->getKey()), 8, 16))); // 加密
+                return str_replace(array('+', '/', '='), array('-', '_', '~'),$this->encrypt(str_replace(array('+', '/', '='), array('-', '_', '~'),$srt->XEncrypt($data, md5($this->getKey('cookie')))), substr(md5($this->getKey('cookie')), 8, 16))); // 加密
                 break;
             case 'd':
-                return $srt->XDecrypt(str_replace(array('-', '_', '~'), array('+', '/', '='),$this->decrypt(str_replace(array('-', '_', '~'), array('+', '/', '='), $data), substr(md5($this->getKey()), 8, 16))), md5($this->getKey())); // 解密
+                return $srt->XDecrypt(str_replace(array('-', '_', '~'), array('+', '/', '='),$this->decrypt(str_replace(array('-', '_', '~'), array('+', '/', '='), $data), substr(md5($this->getKey('cookie')), 8, 16))), md5($this->getKey('cookie'))); // 解密
                 break;
             default:
                 return 'AES Error: Data not';

@@ -26,6 +26,45 @@ class IndexController extends BaseController{
         //$dbData = Api::fun()->getDB()->where(array('user_name'=>'tongji'))->delete('user');
         //$dbData = Api::fun()->getDB()->commit();
 
+        $Domain = Api::fun()->getDomain();
+        Api::render('admin/index', array('domain' => $Domain,'title' => '后台首页'));
+    }
+
+    /**
+     * 解锁
+     */
+    public static function lock() {
+        parent::__checkManagePrivate();
+        $config = Api::request()->data;
+        if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
+            $token = unserialize($_SESSION['token']);
+            if(trim($token[0])===trim(hex2bin($config['satoken']))&&trim($token[2])>(time()-trim($token[1]))) {
+                $_SESSION['token'] = 0;
+                $lock_pwd = Api::fun()->getRSA('rd',trim($config['lock_pwd']));
+                if(!parent::isPWD($lock_pwd)) {
+                    header('Location: ' . Api::request()->url);exit();
+                }
+                $option = array('user_lock'=>trim(md5(Api::fun()->getRSA('re',$lock_pwd))));
+                $dbData = Api::fun()->getDB()->where($option)->select('user',1);
+                $sess = json_decode(Api::fun()->getXTea(Api::request()->cookies->Q,'d'), true);
+                if(!empty($dbData['user_name'])&&trim($sess['u'])===trim($dbData['user_name'])) {
+                    $_SESSION['t'] = time();
+                    header('Location: /admin-index');exit();
+                }
+            }
+        }
+        $pubKey = Api::fun()->getKey();
+        $token = Api::fun()->getToken();
+        $Domain = Api::fun()->getDomain();
+        Api::render('admin/lock', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
+    }
+
+    /**
+     * 登陆
+     */
+    public static function login() {
+        parent::__checkManagePrivate();
+        $config = Api::request()->data;
         if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
             $token = unserialize($_SESSION['token']);
             if(trim($token[0])===trim(hex2bin($config['satoken']))&&trim($token[2])>(time()-trim($token[1]))) {
@@ -42,16 +81,16 @@ class IndexController extends BaseController{
                 $dbData = Api::fun()->getDB()->where($option)->select('user',1);
                 //echo Api::fun()->getDB()->getLastSql(); // 最后一次运行 SQL 语句
                 if(!empty($dbData)) {
-                    $_SESSION['t'] = time();
+                    $_SESSION['t'] = time()-Api::fun()->getLockTime()*2;
                     $verify = Api::fun()->getXTea(array('e'=>$dbData['user_email'],'u'=>$dbData['user_name'],'au'=>$dbData['user_ok'],'ua'=>trim(Api::request()->user_agent),'ip'=>trim(Api::request()->ip),'t'=>$dbData['user_logintime'],'id'=>session_id()));
                     $ssid = Api::fun()->getSSID()->getid(md5(trim($dbData['user_name'])));
                     if(!empty($ssid)){
                         Api::fun()->getSESS()->destroy(trim($ssid));
                     }
-                    Api::fun()->getSSID()->setid(md5(trim($dbData['user_name'])),trim(session_id()));
+                    Api::fun()->getSSID()->setid(md5(trim($dbData['user_name'])),trim(session_id()),Api::fun()->getDomTime());
                     $_SESSION['user'] = md5($verify);
-                    setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
-                    setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
+                    setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)==='http'?false:true),true);
+                    setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)==='http'?false:true),true);
                     header('Location: /admin-index');exit();
                 } else {
                     header('Location: ' . Api::request()->url);exit();
@@ -61,35 +100,6 @@ class IndexController extends BaseController{
         $pubKey = Api::fun()->getKey();
         $token = Api::fun()->getToken();
         $Domain = Api::fun()->getDomain();
-        Api::render('admin/index', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
-    }
-
-    /**
-     * 解锁界面
-     */
-    public static function lock() {
-        parent::__checkManagePrivate();
-        $config = Api::request()->data;
-        if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
-            $token = unserialize($_SESSION['token']);
-            if(trim($token[0])===trim(hex2bin($config['satoken']))&&trim($token[2])>(time()-trim($token[1]))) {
-                $_SESSION['token'] = 0;
-                $lock_pwd = Api::fun()->getRSA('rd',trim($config['lock_pwd']));
-                if(!parent::isPWD($lock_pwd)) {
-                    header('Location: ' . Api::request()->url);exit();
-                }
-                $option = array('user_lock'=>trim(md5(Api::fun()->getRSA('re',$lock_pwd))));
-                $dbData = Api::fun()->getDB()->where($option)->select('user',1);
-                $sess = json_decode(Api::fun()->getXTea($_COOKIE['Q'],'d'), true);
-                if(!empty($dbData['user_name'])&&trim($sess['u'])==trim($dbData['user_name'])) {
-                    $_SESSION['t'] = time();
-                    header('Location: /admin-index');exit();
-                }
-            }
-        }
-        $pubKey = Api::fun()->getKey();
-        $token = Api::fun()->getToken();
-        $Domain = Api::fun()->getDomain();
-        Api::render('admin/lock', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
+        Api::render('admin/login', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
     }
 }
