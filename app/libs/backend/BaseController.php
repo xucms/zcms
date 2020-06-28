@@ -33,7 +33,9 @@ class BaseController {
                 header('Location: /admin-lock');
                 exit();
             }
-            $_SESSION['t'] = time();
+            if(Api::request()->url!='/admin-lock') {
+                $_SESSION['t'] = time();
+            }
             Api::fun()->getSSID()->setid(md5(trim($sess['u'])),trim($sess['id']),Api::fun()->getDomTime());
             setcookie('Q', Api::request()->cookies->Q, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);
             setcookie('TREE', md5(Api::request()->cookies->$seid), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)=='http'?false:true),true);

@@ -44,9 +44,9 @@ class IndexController extends BaseController{
                 if(!parent::isPWD($lock_pwd)) {
                     header('Location: ' . Api::request()->url);exit();
                 }
-                $option = array('user_lock'=>trim(md5(Api::fun()->getRSA('re',$lock_pwd))));
-                $dbData = Api::fun()->getDB()->where($option)->select('user',1);
                 $sess = json_decode(Api::fun()->getXTea(Api::request()->cookies->Q,'d'), true);
+                $option = array('user_name'=>trim($sess['u']),'user_lock'=>trim(md5(Api::fun()->getRSA('re',$lock_pwd))));
+                $dbData = Api::fun()->getDB()->where($option)->select('user',1);
                 if(!empty($dbData['user_name'])&&trim($sess['u'])===trim($dbData['user_name'])) {
                     $_SESSION['t'] = time();
                     header('Location: /admin-index');exit();
@@ -81,15 +81,16 @@ class IndexController extends BaseController{
                 $dbData = Api::fun()->getDB()->where($option)->select('user',1);
                 //echo Api::fun()->getDB()->getLastSql(); // 最后一次运行 SQL 语句
                 if(!empty($dbData)) {
+                    $seid = Api::fun()->getSessName();
                     $_SESSION['t'] = time()-Api::fun()->getLockTime()*2;
-                    $verify = Api::fun()->getXTea(array('e'=>$dbData['user_email'],'u'=>$dbData['user_name'],'au'=>$dbData['user_ok'],'ua'=>trim(Api::request()->user_agent),'ip'=>trim(Api::request()->ip),'t'=>$dbData['user_logintime'],'id'=>session_id()));
+                    $verify = Api::fun()->getXTea(array('e'=>$dbData['user_email'],'u'=>$dbData['user_name'],'au'=>$dbData['user_ok'],'ua'=>trim(Api::request()->user_agent),'ip'=>trim(Api::request()->ip),'t'=>$dbData['user_logintime'],'id'=>Api::request()->cookies->$seid));
                     $ssid = Api::fun()->getSSID()->getid(md5(trim($dbData['user_name'])));
                     if(!empty($ssid)){
                         Api::fun()->getSESS()->destroy(trim($ssid));
                     }
-                    Api::fun()->getSSID()->setid(md5(trim($dbData['user_name'])),trim(session_id()),Api::fun()->getDomTime());
+                    Api::fun()->getSSID()->setid(md5(trim($dbData['user_name'])),trim(Api::request()->cookies->$seid),Api::fun()->getDomTime());
                     $_SESSION['user'] = md5($verify);
-                    setcookie('TREE', md5(session_id()), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)==='http'?false:true),true);
+                    setcookie('TREE', md5(Api::request()->cookies->$seid), time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)==='http'?false:true),true);
                     setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)==='http'?false:true),true);
                     header('Location: /admin-index');exit();
                 } else {
