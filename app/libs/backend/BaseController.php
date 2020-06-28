@@ -13,13 +13,17 @@ class BaseController {
     protected static function __checkManagePrivate() {
         Api::fun()->getSESS();
         $seid = Api::fun()->getSessName();
-        if(empty(Api::request()->cookies->GUID)||(!empty(Api::request()->cookies->TREE)&&md5(Api::request()->cookies->$seid)!=trim(Api::request()->cookies->TREE))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5(Api::request()->cookies->Q))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
+        if(!empty(Api::request()->proxy_ip)||empty(Api::request()->cookies->GUID)||(!empty(Api::request()->cookies->TREE)&&md5(Api::request()->cookies->$seid)!=trim(Api::request()->cookies->TREE))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5(Api::request()->cookies->Q))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
             header('Location: /error.html');
             exit();
         }
         if(!empty($_SESSION['user'])&&!empty(Api::request()->cookies->Q)&&(trim($_SESSION['user'])===md5(Api::request()->cookies->Q))) {
             $sess = json_decode(Api::fun()->getXTea(Api::request()->cookies->Q,'d'), true);
             $ssid = Api::fun()->getSSID()->getid(md5(trim($sess['u'])));
+            if(Api::request()->ip!==$sess['ip']&&Api::request()->user_agent!==$sess['ua']) {
+                header('Location: /error.html');
+                exit();
+            }
             if(empty($sess['id'])||empty($ssid)||$sess['id']!=Api::request()->cookies->$seid||$ssid!=Api::request()->cookies->$seid) {
                 $_SESSION['user'] = 0;
                 header('Location: /error.html');

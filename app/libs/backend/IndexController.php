@@ -65,6 +65,9 @@ class IndexController extends BaseController{
     public static function login() {
         parent::__checkManagePrivate();
         $config = Api::request()->data;
+        if(!empty($_SESSION['lock'])&&$_SESSION['lock']>3) {
+            header('Location: /');exit();
+        }
         if(!empty($config['satoken'])&&!empty($_SESSION['token'])) {
             $token = unserialize($_SESSION['token']);
             if(trim($token[0])===trim(hex2bin($config['satoken']))&&trim($token[2])>(time()-trim($token[1]))) {
@@ -94,6 +97,7 @@ class IndexController extends BaseController{
                     setcookie('Q', $verify, time()+Api::fun()->getDomTime(), '/', Api::fun()->getDomain(), ((Api::request()->scheme)==='http'?false:true),true);
                     header('Location: /admin-index');exit();
                 } else {
+                    $_SESSION['lock'] = empty($_SESSION['lock'])?1:ceil($_SESSION['lock'])+1;
                     header('Location: ' . Api::request()->url);exit();
                 }
             }
