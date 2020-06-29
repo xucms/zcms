@@ -49,8 +49,12 @@ class IndexController extends BaseController{
                 $dbData = Api::fun()->getDB()->where($option)->select('user',1);
                 if(!empty($dbData['user_name'])&&trim($sess['u'])===trim($dbData['user_name'])) {
                     $_SESSION['t'] = time();
-                    header('Location: /admin-index');exit();
+                    header('Location: /admin-index');
+                    exit();
                 }
+                $_SESSION['user'] = 0;
+                header('Location: /login');
+                exit();
             }
         }
         $pubKey = Api::fun()->getKey();

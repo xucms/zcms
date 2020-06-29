@@ -21,6 +21,7 @@ class BaseController {
             $sess = json_decode(Api::fun()->getXTea(Api::request()->cookies->Q,'d'), true);
             $ssid = Api::fun()->getSSID()->getid(md5(trim($sess['u'])));
             if(Api::request()->ip!==$sess['ip']&&Api::request()->user_agent!==$sess['ua']) {
+                $_SESSION['user'] = 0;
                 header('Location: /error.html');
                 exit();
             }
