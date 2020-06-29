@@ -38,7 +38,9 @@ class RedisSSID extends Common {
      */
     public function setid($key, $value, $timeOut=0) {
         $setRes = $this->redis->set($this->prefix.$key, $value);
-        if ($timeOut > 0) $this->redis->expire($this->prefix.$key, $timeOut);
+        if ($timeOut > 0) {
+            $this->redis->expire($this->prefix.$key, $timeOut);
+        }
         return $setRes;
     }
 
@@ -68,7 +70,9 @@ class RedisSSID extends Common {
     public function lpush($key,$value,$timeOut=0) {
         // echo "$key - $value \n";
         $re = $this->redis->LPUSH($this->prefix.$key,$value);
-        if ($timeOut > 0) $this->redis->expire($this->prefix.$key, $timeOut);
+        if ($timeOut > 0) {
+            $this->redis->expire($this->prefix.$key, $timeOut);
+        }
         return $re;
     }
 
@@ -81,7 +85,9 @@ class RedisSSID extends Common {
     public function rpush($key,$value,$timeOut=0) {
         // echo "$key - $value \n";
         $re = $this->redis->RPUSH($this->prefix.$key,$value);
-        if ($timeOut > 0) $this->redis->expire($this->prefix.$key, $timeOut);
+        if ($timeOut > 0) {
+            $this->redis->expire($this->prefix.$key, $timeOut);
+        }
         return $re;
     }
 
@@ -107,7 +113,9 @@ class RedisSSID extends Common {
      */
     public function sadd($key,$value,$timeOut = 0) {
         $re = $this->redis->sadd($this->prefix.$key,$value);
-        if ($timeOut > 0) $this->redis->expire($this->prefix.$key, $timeOut);
+        if ($timeOut > 0) {
+            $this->redis->expire($this->prefix.$key, $timeOut);
+        }
         return $re;
     }
 
@@ -118,7 +126,9 @@ class RedisSSID extends Common {
     public function smembers($key) {
         $re = $this->redis->exists($this->prefix.$key);
         //存在返回1，不存在返回0
-        if(!$re) return false;
+        if(!$re) {
+            return false;
+        }
         return $this->redis->smembers($this->prefix.$key);
     }
 
@@ -132,14 +142,18 @@ class RedisSSID extends Common {
      * @return int 插入操作成功返回插入数量【,更新操作返回0】
      */
     public function zadd($key,$score_value,$timeOut =0) {
-        if(!is_array($score_value)) return false;
+        if(!is_array($score_value)) {
+            return false;
+        }
         $a = 0;
         //存放插入的数量
         foreach($score_value as $score=>$value) {
             $re = $this->redis->zadd($this->prefix.$key,$score,$value);
             //当修改时，可以修改，但不返回更新数量
             $re && $a+=1;
-            if ($timeOut > 0) $this->redis->expire($this->prefix.$key, $timeOut);
+            if ($timeOut > 0) {
+                $this->redis->expire($this->prefix.$key, $timeOut);
+            }
         }
         return $a;
     }
@@ -155,14 +169,18 @@ class RedisSSID extends Common {
     public function zrange($key,$min = 0 ,$num = 1,$order = 'desc') {
         $re = $this->redis->exists($this->prefix.$key);
         //存在返回1，不存在返回0
-        if(!$re) return false;
+        if(!$re) {
+            return false;
+        }
         //不存在键值
         if('desc' == strtolower($order)) {
             $re = $this->redis->zrevrange($this->prefix.$key,$min ,$min+$num-1);
         } else {
             $re = $this->redis->zrange($this->prefix.$key,$min ,$min+$num-1);
         }
-        if(!$re) return false;
+        if(!$re) {
+            return false;
+        }
         //查询的范围值为空
         return $re;
     }
@@ -183,7 +201,9 @@ class RedisSSID extends Common {
             $re = $this->redis->zrank($this->prefix.$key,$member);
             //其中有序集成员按score值递增(从小到大)顺序排列，返回其排位
         }
-        if(!is_numeric($re)) return false;
+        if(!is_numeric($re)) {
+            return false;
+        }
         //不存在键值
         return $re;
     }
@@ -231,7 +251,9 @@ class RedisSSID extends Common {
         //field的数据value，以json的形式存储
         $re = $this->redis->hSet($redis_table_name,$redis_key_name,$redis_info);
         //存入缓存
-        if ($timeOut > 0) $this->redis->expire($redis_table_name, $timeOut);
+        if ($timeOut > 0) {
+            $this->redis->expire($redis_table_name, $timeOut);
+        }
         //设置过期时间
         return $re;
     }
@@ -264,7 +286,9 @@ class RedisSSID extends Common {
      */
     public function hmset($key,$data,$timeOut=0) {
         $re = $this->redis->hmset($this->prefix.$key,$data);
-        if ($timeOut > 0) $this->redis->expire($this->prefix.$key, $timeOut);
+        if ($timeOut > 0) {
+            $this->redis->expire($this->prefix.$key, $timeOut);
+        }
         return $re;
     }
 
@@ -276,7 +300,9 @@ class RedisSSID extends Common {
     public function hval($key) {
         $re = $this->redis->exists($this->prefix.$key);
         //存在返回1，不存在返回0
-        if(!$re) return false;
+        if(!$re) {
+            return false;
+        }
         $vals = $this->redis->hvals($this->prefix.$key);
         $keys = $this->redis->hkeys($this->prefix.$key);
         $re = array_combine($keys,$vals);
@@ -292,7 +318,9 @@ class RedisSSID extends Common {
     public function hval2($key) {
         $re = $this->redis->exists($this->prefix.$key);
         //存在返回1，不存在返回0
-        if(!$re) return false;
+        if(!$re) {
+            return false;
+        }
         $re = $this->redis->hgetall($this->prefix.$key);
         return $re;
     }
@@ -326,24 +354,22 @@ class RedisSSID extends Common {
         $num = intval($num);
         switch(strtolower(trim($type))) {
             case "zset":
-                $re = $this->redis->zIncrBy($this->prefix.$key,$num,$member);
-            //增长权值
-            break;
+                $re = $this->redis->zIncrBy($this->prefix.$key,$num,$member); //增长权值
+                break;
             case "hash":
-                $re = $this->redis->hincrby($this->prefix.$key,$member,$num);
-            //增长hashmap里的值
-            break;
+                $re = $this->redis->hincrby($this->prefix.$key,$member,$num); //增长hashmap里的值
+                break;
             default:
                 if($num > 0) {
-                    $re = $this->redis->incrby($this->prefix.$key,$num);
-                    //默认增长
+                    $re = $this->redis->incrby($this->prefix.$key,$num); //默认增长
                 } else {
-                    $re = $this->redis->decrBy($this->prefix.$key,-$num);
-                    //默认增长
+                    $re = $this->redis->decrBy($this->prefix.$key,-$num); //默认增长
                 }
-            break;
+                break;
         }
-        if($re) return $re;
+        if($re) {
+            return $re;
+        }
         return false;
     }
 
@@ -353,11 +379,9 @@ class RedisSSID extends Common {
      */
     function flush($type = 0) {
         if($type) {
-            $this->redis->flushAll();
-            //清除所有数据库
+            $this->redis->flushAll(); //清除所有数据库
         } else {
-            $this->redis->flushdb();
-            //清除当前数据库
+            $this->redis->flushdb(); //清除当前数据库
         }
     }
 
@@ -371,12 +395,11 @@ class RedisSSID extends Common {
     public function exists($keys,$type = '',$field='') {
         switch(strtolower(trim($type))) {
             case 'hash':
-                $re = $this->redis->hexists($keys,$field);
-            //有返回1，无返回0
-            break;
+                $re = $this->redis->hexists($keys,$field); //有返回1，无返回0
+                break;
             default:
                 $re = $this->redis->exists($keys);
-            break;
+                break;
         }
         return $re;
     }
@@ -386,26 +409,22 @@ class RedisSSID extends Common {
      * @param string|array $key，键值
      * @param $type，类型，默认为常规，还有hash,zset
      * @param string $field,hash=>表示$field值，set=>表示value,zset=>表示value值，list类型特殊暂时不加
-     * @return int | ，返回删除的个数
+     * @return int | 返回删除的个数
      */
     public function delete($key,$type,$field = '') {
         switch(strtolower(trim($type))) {
             case 'hash':
-                $re = $this->redis->hDel($this->prefix.$key,$field);
-            //返回删除个数
-            break;
+                $re = $this->redis->hDel($this->prefix.$key,$field); //返回删除个数
+                break;
             case 'set':
-                $re = $this->redis->sRem($this->prefix.$key,$field);
-            //返回删除个数
-            break;
+                $re = $this->redis->sRem($this->prefix.$key,$field); //返回删除个数
+                break;
             case 'zset':
-                $re = $this->redis->zDelete($this->prefix.$key,$field);
-            //返回删除个数
-            break;
+                $re = $this->redis->zDelete($this->prefix.$key,$field); //返回删除个数
+                break;
             default:
-                $re = $this->redis->del($this->prefix.$key);
-            //返回删除个数
-            break;
+                $re = $this->redis->del($this->prefix.$key); //返回删除个数
+                break;
         }
         return $re;
     }
@@ -416,7 +435,9 @@ class RedisSSID extends Common {
         //声明日志的最大尺寸1000K
         $log_dir = './log';
         //日志存放根目录
-        if(!file_exists($log_dir)) mkdir($log_dir,0777);
+        if(!file_exists($log_dir)) {
+            mkdir($log_dir,0777);
+        }
         //如果不存在该文件夹，创建
         if($position == 'user') {
             $log_filename = "{$log_dir}/User_redis_log.txt";
