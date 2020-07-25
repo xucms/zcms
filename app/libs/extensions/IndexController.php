@@ -13,7 +13,7 @@ class IndexController extends BaseController{
      */
     public static function index() {
         $Domain = Api::fun()->getDomain();
-        Api::render('index', array('domain' => $Domain,'title' => '地球村'));
+        Api::render('index', array('domain' => $Domain,'title' => Api::fun()->getTitle()));
     }
 
 }

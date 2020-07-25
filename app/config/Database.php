@@ -1,6 +1,8 @@
 <?php
 return array(
 # ======> 公共配置
+    # 网站名称
+    'title' => '美国部落',
     # SESSION 数据用户未登录过期时间 秒
     'timeout' => '30',
     # SESSION 数据用户登陆后过期时间 秒

@@ -1,7 +1,7 @@
 <?php
 namespace app\libs\common;
 
-class Rsa extends Common {
+class CommonRsa extends Common {
 
     /**
      * 签名算法， 默认为 OPENSSL_ALGO_SHA1

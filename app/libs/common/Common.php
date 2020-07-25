@@ -5,6 +5,12 @@ use app;
 
 class Common extends app\Engine {
 
+    // 网站名称
+    public function getTitle() {
+        $config = $this->get('web.config');
+        return trim($config['title']);
+    }
+
     // 作用域
     public function getDomain() {
         $config = $this->get('web.config');
@@ -103,7 +109,7 @@ class Common extends app\Engine {
     public function getDB($name = 'db') {
         if (!isset(self::$dbsInstances[$name])) {
             $config = $this->get('web.config');
-            $this->loader->register('getDbPdo', 'app\libs\common\DbPdo',array (
+            $this->loader->register('getDbPdo', 'app\libs\common\MySQLPDO',array (
                 $config[$name.'.host'],    // 数据库主机地址 默认='127.0.0.1'
                 $config[$name.'.user'],    // 数据库用户名
                 $config[$name.'.pass'],    // 数据库密码
@@ -127,7 +133,7 @@ class Common extends app\Engine {
 
     // XAES加密 返回JSON
     public function getXTea($data = 'str', $id = 'e') {
-        $this->loader->register('getTea', 'app\libs\common\Tea');
+        $this->loader->register('getTea', 'app\libs\common\CommonTea');
         $srt = $this->getTea();
         switch ($id) {
             case 'e':
@@ -165,7 +171,7 @@ class Common extends app\Engine {
     // RSA 加密, 解密, 签名, 验签 返回JSON
     public function getRSA($id = 're', $data, $sign = false, $third = false) {
         $config = $this->get('web.config');  // 密钥
-        $this->loader->register('getRsaSrt', 'app\libs\common\Rsa',array(
+        $this->loader->register('getRsaSrt', 'app\libs\common\CommonRsa',array(
             $config['public.third'],
             $config['private'],
             (empty($third)?$this->getKey():$this->getKey($third)),

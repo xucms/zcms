@@ -6,10 +6,9 @@
 <script src="/public/creator/jquery/jquery.min.js"></script>
 <script src="/public/creator/jquery/jquery.cookie.js"></script>
 <script src="/public/creator/jquery/jsencrypt.min.js"></script>
+<script src="/public/creator/js/md5.min.js"></script>
 <script src="/public/creator/js/common.js"></script>
 <link rel="stylesheet" type="text/css" href="/public/creator/css/common.min.css">
-<script>$.cookie('GUID', '1', { expires: 7, path: '/', domain: '{$domain}' });</script>
-<script>getUserIP(function(ip){$('#ip').val(ip);});</script>
 <style>
 .center{position:absolute;top:50%;left:50%;-ms-transform:translate(-50%,-50%);-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);}
 .login{position:relative;margin:auto;padding:20px 20px 20px;width:310px;background:white;border-radius:3px;-webkit-box-shadow:0 0 200px rgba(255,255,255,0.5),0 1px 2px rgba(0,0,0,0.3);box-shadow:0 0 200px rgba(255,255,255,0.5),0 1px 2px rgba(0,0,0,0.3);}

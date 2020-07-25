@@ -1,37 +1,8 @@
-function getUserIP(onNewIP) {
-    //compatibility for firefox and chrome
-    var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-    var pc = new myPeerConnection({
-        iceServers: []
-    }),
-    noop = function() {},
-    localIPs = {},
-    ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g,
-    key;
+//setInterval(function(){(function (x){return (function (x){return (Function('Function(arguments[0]+"'+x+'")()'))})(x)})('bugger')('de',0,0,(0,0));},0.001);
 
-    function iterateIP(ip) {
-        if (!localIPs[ip]) onNewIP(ip);
-        localIPs[ip] = true;
-    }
-
-     //create a bogus data channel
-    pc.createDataChannel("");
-
-    // create offer and set local description
-    pc.createOffer().then(function(sdp) {
-        sdp.sdp.split('\n').forEach(function(line) {
-            if (line.indexOf('candidate') < 0) return;
-            line.match(ipRegex).forEach(iterateIP);
-        });
-        
-        pc.setLocalDescription(sdp, noop, noop);
-    }).catch(function(reason) {
-        // An error occurred, so handle the failure to connect
-    });
-
-    //listen for candidate events
-    pc.onicecandidate = function(ice) {
-        if (!ice || !ice.candidate || !ice.candidate.candidate || !ice.candidate.candidate.match(ipRegex)) return;
-        ice.candidate.candidate.match(ipRegex).forEach(iterateIP);
-    };
+if(navigator.cookieEnabled){
+    $.cookie('GUID', md5(navigator.userAgent), {expires: 7, path: '/'});
 }
+
+console.log(navigator);
+console.log(document);

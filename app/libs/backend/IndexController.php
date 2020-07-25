@@ -60,7 +60,7 @@ class IndexController extends BaseController{
         $pubKey = Api::fun()->getKey();
         $token = Api::fun()->getToken();
         $Domain = Api::fun()->getDomain();
-        Api::render('admin/lock', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
+        Api::render('admin/lock', array('domain' => $Domain,'title' => Api::fun()->getTitle(),'pubKey' => base64_encode($pubKey),'token' => $token));
     }
 
     /**
@@ -109,6 +109,6 @@ class IndexController extends BaseController{
         $pubKey = Api::fun()->getKey();
         $token = Api::fun()->getToken();
         $Domain = Api::fun()->getDomain();
-        Api::render('admin/login', array('domain' => $Domain,'title' => '地球村','pubKey' => base64_encode($pubKey),'token' => $token));
+        Api::render('admin/login', array('domain' => $Domain,'title' => Api::fun()->getTitle(),'pubKey' => base64_encode($pubKey),'token' => $token));
     }
 }

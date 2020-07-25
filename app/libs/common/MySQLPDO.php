@@ -1,7 +1,7 @@
 <?php
 namespace app\libs\common;
 
-class DbPdo extends Common {
+class MySQLPDO extends Common {
 
     /**
      * 静态属性,所有数据库实例共用,避免重复连接数据库

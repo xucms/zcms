@@ -13,7 +13,7 @@ class BaseController {
     protected static function __checkManagePrivate() {
         Api::fun()->getSESS();
         $seid = Api::fun()->getSessName();
-        if(!empty(Api::request()->proxy_ip)||empty(Api::request()->cookies->GUID)||(!empty(Api::request()->cookies->TREE)&&md5(Api::request()->cookies->$seid)!=trim(Api::request()->cookies->TREE))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5(Api::request()->cookies->Q))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
+        if(!empty(Api::request()->proxy_ip)||empty(Api::request()->cookies->GUID)||(trim(Api::request()->cookies->GUID)!=md5(Api::request()->user_agent))||(!empty(Api::request()->cookies->TREE)&&md5(Api::request()->cookies->$seid)!=trim(Api::request()->cookies->TREE))||(!empty($_SESSION['user'])&&trim($_SESSION['user'])!=md5(Api::request()->cookies->Q))||(empty($_SESSION['user'])&&Api::request()->url!='/login')) {
             header('Location: /error.html');
             exit();
         }
